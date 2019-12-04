@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kairlec.dao.DescriptionMapMapper">
+
+    <update id="init">
+        create table if not exists description_map
+        (
+            path varchar(256) not null primary key,
+            description varchar(512) not null
+        )
+    </update>
+
+    <select id="getAll" resultType="com.kairlec.pojo.DescriptionMap">
+        SELECT *
+        FROM description_map
+    </select>
+
+    <select id="getSection" resultType="com.kairlec.pojo.DescriptionMap">
+        SELECT *
+        FROM description_map
+        WHERE path in
+        <foreach collection="Paths" item="item" index="index" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="getDescriptionMap" parameterType="java.lang.String" resultType="com.kairlec.pojo.DescriptionMap">
+        SELECT *
+        FROM description_map
+        WHERE path = #{path}
+    </select>
+
+    <insert id="insertDescriptionMap" parameterType="com.kairlec.pojo.DescriptionMap">
+        INSERT INTO description_map(path,description)
+        VALUES (#{path}, #{description})
+    </insert>
+
+    <update id="updateDescriptionMap" parameterType="com.kairlec.pojo.DescriptionMap">
+        UPDATE
+            `description_map`
+        SET description=#{description}
+        WHERE path = #{path}
+    </update>
+
+    <delete id="deleteDescriptionMap" parameterType="java.lang.String">
+        DELETE
+        FROM description_map
+        WHERE path = #{path}
+    </delete>
+</mapper>

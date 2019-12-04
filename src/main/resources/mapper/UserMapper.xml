@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kairlec.dao.UserMapper">
+
+    <update id="init">
+        create table if not exists users
+        (
+            username        varchar(20) not null primary key,
+            password        varchar(16) not null,
+            ip              varchar(35),
+            last_login_time datetime,
+            last_session_id varchar(64)
+        )
+    </update>
+
+    <select id="getAll" resultType="com.kairlec.pojo.User">
+        SELECT *
+        FROM users
+    </select>
+
+    <select id="getUser" parameterType="java.lang.String" resultType="com.kairlec.pojo.User">
+        SELECT *
+        FROM users
+        WHERE username = #{username}
+    </select>
+
+    <insert id="insertUser" parameterType="com.kairlec.pojo.User">
+        INSERT INTO users(username, password, ip, last_login_time, last_session_id)
+        VALUES (#{username}, #{password}, #{IP}, #{lastLoginTime}, #{lastSessionId})
+    </insert>
+
+    <update id="updateLoginInfo" parameterType="com.kairlec.pojo.User">
+        UPDATE
+            `users`
+        SET ip              = #{IP},
+            last_login_time = #{lastLoginTime},
+            last_session_id = #{lastSessionId}
+        WHERE username      = #{username}
+    </update>
+
+    <update id="updatePassword" parameterType="com.kairlec.pojo.User">
+        UPDATE
+            `users`
+        SET password = #{password}
+        WHERE username = #{username}
+    </update>
+
+    <delete id="deleteUser" parameterType="java.lang.String">
+        DELETE
+        FROM users
+        WHERE username = #{username}
+    </delete>
+</mapper>
