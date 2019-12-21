@@ -1,7 +1,6 @@
 package com.kairlec.utils.file;
 
-import com.kairlec.exception.ErrorCode;
-import com.kairlec.exception.ErrorCodeClass;
+import com.kairlec.exception.ServiceError;
 import com.kairlec.utils.LocalConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,7 +14,7 @@ import java.nio.charset.StandardCharsets;
 public class DownloadFile {
     private static Logger logger = LogManager.getLogger(DownloadFile.class);
 
-    public static ErrorCode HTTP(String URIRoot, String Content, HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public static ServiceError HTTP(String URIRoot, String Content, HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setHeader("Access-Control-Allow-Origin", "*");
         response.setHeader("Cache-Control", "no-cache");
         String requestURI = "";
@@ -26,8 +25,9 @@ public class DownloadFile {
             e.printStackTrace();
         }
         if (requestURI.endsWith("/" + URIRoot + "/") || requestURI.endsWith("/" + URIRoot)) {
+            logger.info("URI is end with" + "/" + URIRoot + "/ or " + "/" + URIRoot);
             response.setStatus(404);
-            return ErrorCodeClass.FILE_NOT_EXISTS;
+            return ServiceError.FILE_NOT_EXISTS;
         }
         // 获取文件
         String filePath = requestURI.substring(2 + URIRoot.length());
@@ -42,8 +42,29 @@ public class DownloadFile {
         if (!file.exists()) {
             logger.error("文件“" + file.getAbsolutePath() + "”不存在!");
             response.setStatus(404);
-            return ErrorCodeClass.FILE_NOT_EXISTS;
+            return ServiceError.FILE_NOT_EXISTS;
         }
+        if (file.isDirectory()) {
+            logger.error("文件“" + file.getAbsolutePath() + "”是文件夹!");
+            response.setStatus(404);
+            return ServiceError.NOT_FILE;
+        }
+
+        //判断是否重定向
+        if (true) {
+            String fileName = file.getName();
+            String ext;
+            if (fileName.lastIndexOf('.') != -1) {
+                ext = fileName.substring(fileName.lastIndexOf('.') + 1);
+            } else {
+                ext = null;
+            }
+            if (ext != null && ext.equals("Redirect")) {
+                String str = GetFileContent.byFile(file);
+                response.sendRedirect(str);
+            }
+        }
+
         OutputStream os = response.getOutputStream();
         long start = 0;
         String range = request.getHeader("range");
@@ -71,6 +92,6 @@ public class DownloadFile {
         is.close();
         logger.info("下载完成!");
         response.setStatus(200);
-        return ErrorCodeClass.NO_ERROR;
+        return ServiceError.NO_ERROR;
     }
 }

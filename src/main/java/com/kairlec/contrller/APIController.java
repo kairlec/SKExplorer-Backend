@@ -1,7 +1,8 @@
 package com.kairlec.contrller;
 
+import com.kairlec.local.utils.ResponseDataUtils;
 import com.kairlec.pojo.Json.FileList;
-import com.kairlec.exception.ErrorCodeClass;
+import com.kairlec.exception.ServiceError;
 import com.kairlec.exception.SKException;
 import com.kairlec.utils.LocalConfig;
 import com.kairlec.utils.file.GetFileList;
@@ -17,7 +18,7 @@ import java.nio.charset.StandardCharsets;
 public class APIController {
 
     @RequestMapping(value = {
-            "/file/*",
+            "/file/**",
             "/file"
     }, produces = "application/json; charset=utf-8")
     String file(HttpServletRequest request) {
@@ -31,17 +32,18 @@ public class APIController {
         try {
             FileList fileList = GetFileList.byPath(path);
             if (fileList == null) {
-                return ErrorCodeClass.IO_EXCEPTION.toString();
+                return ResponseDataUtils.Error(ServiceError.IO_EXCEPTION);
             } else {
-                return fileList.toString();
+                return ResponseDataUtils.successData(fileList);
             }
         } catch (SKException e) {
-            return e.getErrorCode().toString();
+            return ResponseDataUtils.Error(e);
         }
     }
-    @RequestMapping(value="/PK")
-    String PK(){
-        return LocalConfig.getPublicKey();
+
+    @RequestMapping(value = "/PK")
+    String PK() {
+        return ResponseDataUtils.successData(LocalConfig.getPublicKey());
     }
 
 }

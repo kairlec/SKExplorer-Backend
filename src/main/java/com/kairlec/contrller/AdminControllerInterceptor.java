@@ -1,7 +1,7 @@
 package com.kairlec.contrller;
 
 import com.kairlec.pojo.User;
-import com.kairlec.exception.ErrorCodeClass;
+import com.kairlec.exception.ServiceError;
 import com.kairlec.utils.LocalConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,7 +26,7 @@ public class AdminControllerInterceptor implements HandlerInterceptor {
             add("/admin/login");
             add("/admin/captcha");
             add("/admin/newcaptcha");
-            add("/error/post");
+            add("/submit/error/post");
         }
     };
 
@@ -34,13 +34,16 @@ public class AdminControllerInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         // TODO Auto-generated method stub
         if (!request.getMethod().equalsIgnoreCase("POST")) {
+            logger.debug("URI=" + request.getRequestURI());
+            logger.debug("URL=" + request.getRequestURL().toString());
+            logger.debug("非POST方法请求拦截域内容,拒绝");
             response.setStatus(403);
             return false;
         }
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
         String requestUrl = URLDecoder.decode(request.getRequestURI(), StandardCharsets.UTF_8);
-
+        logger.debug("有新的拦截域内容请求,URL=" + request.getRequestURL().toString());
         HttpSession session = request.getSession(true);
         logger.info("获取到session,ID=" + session.getId());
         if (blackAPIList.contains(requestUrl)) {
@@ -50,14 +53,14 @@ public class AdminControllerInterceptor implements HandlerInterceptor {
         if (user == null) {
             logger.info("新打开session或未找到已有用户");
             logger.info("无法处理的未登录请求");
-            response.getWriter().write(ErrorCodeClass.NOT_LOGGED_IN.toString());
+            response.getWriter().write(ServiceError.NOT_LOGGED_IN.toString());
             return false;
         } else {
             logger.info("在Session取到了'" + user.getUsername() + "'的用户名");
             User targetUser = LocalConfig.getUserService().getUser(user.getUsername());
             if (!targetUser.getLastSessionId().equals(session.getId())) {
                 session.invalidate();
-                response.getWriter().write(ErrorCodeClass.EXPIRED_LOGIN.toString());//已登录状态与上一次的登录SessionID不一致,表示在其他地方登录,老的被挤下线
+                response.getWriter().write(ServiceError.EXPIRED_LOGIN.toString());//已登录状态与上一次的登录SessionID不一致,表示在其他地方登录,老的被挤下线
                 return false;
             }
             session.setAttribute("user", targetUser);

@@ -1,10 +1,13 @@
 package com.kairlec.contrller;
 
+import com.kairlec.local.utils.ResponseDataUtils;
+import com.kairlec.local.utils.SKFileUtils;
 import com.kairlec.pojo.Captcha;
 import com.kairlec.pojo.User;
-import com.kairlec.exception.ErrorCodeClass;
+import com.kairlec.exception.ServiceError;
 import com.kairlec.utils.CaptchaMaker;
 import com.kairlec.utils.LocalConfig;
+import com.kairlec.utils.file.FileUtils;
 import com.kairlec.utils.file.SaveFile;
 import com.kairlec.utils.token.UserChecker;
 import org.apache.logging.log4j.LogManager;
@@ -21,6 +24,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 
 @RequestMapping("/admin")
@@ -29,7 +36,7 @@ public class AdminController {
     private static Logger logger = LogManager.getLogger(AdminController.class);
 
     @RequestMapping(value = "/captcha")
-    void captcha(HttpSession session, HttpServletResponse response) {
+    public void captcha(HttpSession session, HttpServletResponse response) {
         Captcha captcha = (Captcha) session.getAttribute("captcha");
         if (captcha == null) {
             logger.info("当前无需验证,错误的验证码请求");
@@ -53,7 +60,7 @@ public class AdminController {
     }
 
     @RequestMapping(value = "/newcaptcha")
-    void newcaptcha(HttpSession session, HttpServletResponse response) {
+    public void newcaptcha(HttpSession session, HttpServletResponse response) {
         Captcha captcha = (Captcha) session.getAttribute("captcha");
         if (captcha == null) {
             response.setStatus(403);
@@ -63,30 +70,14 @@ public class AdminController {
         logger.info("刷新验证码:" + ((Captcha) session.getAttribute("captcha")).getCaptchaString());
     }
 
-    @RequestMapping(value = "/rpwd", produces = "application/json; charset=utf-8")
-    String home(@RequestParam String username, @RequestParam String password) {
-        User oldUser = LocalConfig.getUserService().getUser(username);
-        if (oldUser == null) {
-            return ErrorCodeClass.USERNAME_NOT_EXISTS.toString();
-        }
-        Integer result;
-        User user = new User(username, password);
-        result = LocalConfig.getUserService().updatePassword(user);
-        if (result == null) {
-            return ErrorCodeClass.UNSPECIFIED.toString();
-        } else {
-            return ErrorCodeClass.NO_ERROR.toString();
-        }
-    }
-
     @RequestMapping(value = "/login", produces = "application/json; charset=utf-8")
     public String login(HttpServletRequest request) {
         HttpSession session = request.getSession(true);
 
         UserChecker userChecker = new UserChecker(request);
         if (!userChecker.check()) {
-            logger.info("用户验证失败:" + userChecker.getFailedResult().toString());
-            return userChecker.getFailedResult().toString();
+            logger.info("用户验证失败:" + userChecker.getFailedResult().getMessage());
+            return ResponseDataUtils.Error(userChecker.getFailedResult());
         }
         User user = User.getUser(request);
         Integer result = LocalConfig.getUserService().updateLoginInfo(user);
@@ -96,28 +87,26 @@ public class AdminController {
         logger.info("用户验证成功");
         session.setAttribute("user", user);
         session.setMaxInactiveInterval(60 * 60);
-        return ErrorCodeClass.successData(user).toString();
+        return ResponseDataUtils.successData(user);
     }
 
     @RequestMapping(value = "/logout", produces = "application/json; charset=utf-8")
     public String logout(HttpServletRequest request) {
         HttpSession session = request.getSession(true);
         session.invalidate();
-        return ErrorCodeClass.NO_ERROR.toString();
+        return ResponseDataUtils.OK();
     }
 
     @RequestMapping(value = "/relogin", produces = "application/json; charset=utf-8")
     public String relogin(HttpSession session) {
-        return ErrorCodeClass.successData(session.getAttribute("user")).toString();
+        return ResponseDataUtils.successData(session.getAttribute("user"));
     }
 
-
-    @RequestMapping(value = "/upload")
+    @RequestMapping(value = {"/upload", "/upload/", "/upload/**"})
     public String upload(HttpServletRequest request) {
         logger.info("request.getContentType(): " + request.getContentType());
-
         if (!request.getContentType().split(";")[0].equals("multipart/form-data")) {
-            return ErrorCodeClass.NOT_MULTIPART_FROM_DATA.toString();
+            return ResponseDataUtils.Error(ServiceError.NOT_MULTIPART_FROM_DATA);
         }
 
         String requestUrl = URLDecoder.decode(request.getRequestURI(), StandardCharsets.UTF_8);
@@ -126,10 +115,10 @@ public class AdminController {
         logger.info("文件路径：" + LocalConfig.getConfigBean().getContentdir() + currentPath);
         File file = new File(LocalConfig.getConfigBean().getContentdir() + currentPath);
         if (file.exists() && file.isFile()) {
-            return ErrorCodeClass.INVALID_DIR.toString();
+            return ResponseDataUtils.Error(ServiceError.INVALID_DIR);
         }
         if (!file.mkdirs()) {
-            return ErrorCodeClass.IO_EXCEPTION.toString();
+            return ResponseDataUtils.Error(ServiceError.IO_EXCEPTION);
         }
         int counts = 0;
         try {
@@ -140,14 +129,39 @@ public class AdminController {
                 SaveFile.FileProcess(part, LocalConfig.getConfigBean().getContentdir() + currentPath);
                 counts++;
             }
-        } catch (IOException e) {
+        } catch (IOException | ServletException e) {
             e.printStackTrace();
-            return ErrorCodeClass.IO_EXCEPTION.toString();
-        } catch (ServletException e) {
-            e.printStackTrace();
-            return ErrorCodeClass.UNKNOWN_REQUEST.toString();
+            return ResponseDataUtils.Error(e);
         }
-        return ErrorCodeClass.successData(counts).toString();
+        return ResponseDataUtils.successData(counts);
+    }
+
+    @RequestMapping(value = {"/move", "/move/", "/move/**"})
+    public String move(HttpServletRequest request) {
+        String path = FileUtils.getPathByRequest(request, "move");
+
+        return ServiceError.UNKNOWN.toString();
+    }
+
+    @RequestMapping(value = {"/delete", "/delete/", "/delete/**"})
+    public String delete(HttpServletRequest request) {
+        String path = FileUtils.getPathByRequest(request, "delete");
+        Path filePath = Paths.get(SKFileUtils.getAbsolutePath(path));
+
+        if (!Files.exists(filePath, LinkOption.NOFOLLOW_LINKS)) {
+            return ServiceError.FILE_NOT_EXISTS.toString();
+        }
+        try {
+            Files.delete(filePath);
+        } catch (IOException e) {
+            return ResponseDataUtils.fromException(e).toString();
+        }
+        return ServiceError.NO_ERROR.toString();
+    }
+
+    @RequestMapping(value = "/config")
+    public String config(HttpServletRequest request) {
+        return ServiceError.UNSPECIFIED.toString();
     }
 
 }

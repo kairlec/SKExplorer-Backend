@@ -27,8 +27,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
     List<String> PathPatterns = new ArrayList<>(Arrays.asList(
             "/admin",
             "/admin/*",
-            "/error",
-            "/error/*",
+            "/submit",
+            "/submit/*",
             "/request",
             "/request/*"
     ));

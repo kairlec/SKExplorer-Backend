@@ -10,6 +10,14 @@ import java.util.List;
 
 public class GetFileInfo {
 
+    private static String getType(String filename) {
+        if (filename.lastIndexOf('.') != -1) {
+            return filename.substring(filename.lastIndexOf('.') + 1);
+        } else {
+            return null;
+        }
+    }
+
     public static void MatchDescription(List<FileInfo> fileInfos, List<String> Paths) {
         List<DescriptionMap> descriptionMapList = LocalConfig.getDescriptionMapService().getSection(Paths);
         if (descriptionMapList == null) {
@@ -38,10 +46,14 @@ public class GetFileInfo {
         if (file.isDirectory()) {
             fileInfo.setType("folder");
         } else {
-            if (fileInfo.getName().lastIndexOf('.') != -1) {
-                fileInfo.setType(fileInfo.getName().substring(fileInfo.getName().lastIndexOf('.') + 1));
+            fileInfo.setType(getType(fileInfo.getName()));
+            if (fileInfo.getType() != null && fileInfo.getType().equals("Redirect")) {
+                fileInfo.setName(fileInfo.getName().substring(0, fileInfo.getName().lastIndexOf('.')));
+                //System.out.println(fileInfo.getName());
+                fileInfo.setType(getType(fileInfo.getName()));
+                fileInfo.setRedirect(true);
             } else {
-                fileInfo.setType(null);
+                fileInfo.setRedirect(false);
             }
         }
         fileInfo.setSize(file.length());

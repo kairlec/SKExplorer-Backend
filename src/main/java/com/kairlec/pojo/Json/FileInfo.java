@@ -22,6 +22,8 @@ public class FileInfo {
     private String path;
     @JSONField(serialize = false)
     private boolean exist;
+    @JSONField(serialize = false, name = "redirect")
+    private boolean redirect;
 
     @Override
     public String toString() {

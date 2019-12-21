@@ -1,7 +1,8 @@
 package com.kairlec.contrller;
 
 import com.alibaba.fastjson.JSON;
-import com.kairlec.exception.ErrorCodeClass;
+import com.kairlec.exception.ServiceError;
+import com.kairlec.local.utils.ResponseDataUtils;
 import com.kairlec.utils.file.DownloadFile;
 import com.kairlec.utils.file.GetFileContent;
 import org.apache.logging.log4j.LogManager;
@@ -22,7 +23,7 @@ public class RequestLogController {
 
     @RequestMapping(value = "/get", produces = "text/plain; charset=utf-8")
     String get() {
-        return "[" + GetFileContent.byPath("Log/request.log") + "]";
+        return  ResponseDataUtils.successData("[" + GetFileContent.byPath("Log/request.log") + "]");
     }
 
     @RequestMapping(value = "/list", produces = "application/json; charset=utf-8")
@@ -37,16 +38,16 @@ public class RequestLogController {
                 }
             }
         }
-        return JSON.toJSONString(fileList);
+        return ResponseDataUtils.successData(fileList);
     }
 
-    @RequestMapping(value = "/file/*")
+    @RequestMapping(value = "/file/**")
     String file(HttpServletRequest request, HttpServletResponse response) {
         try {
-            return DownloadFile.HTTP("request/file", "Log/Request", request, response).toString();
+            return ResponseDataUtils.Error(DownloadFile.HTTP("request/file", "Log/Request", request, response));
         } catch (IOException e) {
             e.printStackTrace();
-            return ErrorCodeClass.IO_EXCEPTION.toString();
+            return ResponseDataUtils.Error(e);
         }
     }
 

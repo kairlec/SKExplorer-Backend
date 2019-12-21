@@ -11,7 +11,7 @@ public class ConfigBean {
     private String contentdir;
     private List<String> excludedir;
     private List<String> excludefile;
+    private List<String> excludeext;
     private List<String> domainallowlist;
-    private String captchafont;
     private int captchacount;
 }

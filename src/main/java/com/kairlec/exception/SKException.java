@@ -1,31 +1,27 @@
 package com.kairlec.exception;
 
 
+import com.kairlec.local.utils.ResponseDataUtils;
+
+import java.util.Objects;
 
 public class SKException extends RuntimeException {
 
-
-    /**
-     * 错误码
-     */
-    protected final ErrorCode errorCode;
+    private ServiceError serviceError = null;
 
     /**
      * 无参默认构造UNSPECIFIED
      */
     public SKException() {
-        super((String)ErrorCodeClass.UNSPECIFIED.getData());
-        this.errorCode = ErrorCodeClass.UNSPECIFIED;
+        super();
     }
 
     /**
-     * 指定错误码构造通用异常
-     *
-     * @param errorCode 错误码
+     * 由业务错误ServiceError引发
      */
-    public SKException(final ErrorCode errorCode) {
-        super((String)errorCode.getData());
-        this.errorCode = errorCode;
+    public SKException(ServiceError serviceError) {
+        super();
+        this.serviceError = serviceError;
     }
 
     /**
@@ -35,7 +31,6 @@ public class SKException extends RuntimeException {
      */
     public SKException(final String detailedMessage) {
         super(detailedMessage);
-        this.errorCode = ErrorCodeClass.UNSPECIFIED;
     }
 
     /**
@@ -45,29 +40,6 @@ public class SKException extends RuntimeException {
      */
     public SKException(final Throwable t) {
         super(t);
-        this.errorCode = ErrorCodeClass.UNSPECIFIED;
-    }
-
-    /**
-     * 构造通用异常
-     *
-     * @param errorCode       错误码
-     * @param detailedMessage 详细描述
-     */
-    public SKException(final ErrorCode errorCode, final String detailedMessage) {
-        super(detailedMessage);
-        this.errorCode = errorCode;
-    }
-
-    /**
-     * 构造通用异常
-     *
-     * @param errorCode 错误码
-     * @param t         导火索
-     */
-    public SKException(final ErrorCode errorCode, final Throwable t) {
-        super((String)errorCode.getData(), t);
-        this.errorCode = errorCode;
     }
 
     /**
@@ -78,19 +50,6 @@ public class SKException extends RuntimeException {
      */
     public SKException(final String detailedMessage, final Throwable t) {
         super(detailedMessage, t);
-        this.errorCode = ErrorCodeClass.UNSPECIFIED;
-    }
-
-    /**
-     * 构造通用异常
-     *
-     * @param errorCode       错误码
-     * @param detailedMessage 详细描述
-     * @param t               导火索
-     */
-    public SKException(final ErrorCode errorCode, final String detailedMessage, final Throwable t) {
-        super(detailedMessage, t);
-        this.errorCode = errorCode;
     }
 
     /**
@@ -98,8 +57,8 @@ public class SKException extends RuntimeException {
      *
      * @return property value of errorCode
      */
-    public ErrorCode getErrorCode() {
-        return errorCode;
+    public ServiceError getServiceError() {
+        return Objects.requireNonNullElseGet(serviceError, () -> ResponseDataUtils.fromException(this));
     }
 
 }

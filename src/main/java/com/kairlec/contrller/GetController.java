@@ -18,7 +18,7 @@ public class GetController {
     private static Logger logger = LogManager.getLogger(GetController.class);
 
     @RequestMapping(value = {
-            "/*",
+            "/**",
             ""
     },produces = "text/plain; charset=utf-8")
     void getFile(HttpServletRequest request, HttpServletResponse response) throws IOException {

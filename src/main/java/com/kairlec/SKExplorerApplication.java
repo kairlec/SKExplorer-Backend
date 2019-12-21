@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.*;
 @EnableAutoConfiguration
 @ComponentScan
 @EnableConfigurationProperties({ConfigBean.class})
-public class SKExplorerMain {
+public class SKExplorerApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(SKExplorerMain.class, args);
+        SpringApplication.run(SKExplorerApplication.class, args);
     }
 
 }
