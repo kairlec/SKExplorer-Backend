@@ -1,6 +1,5 @@
-package com.kairlec.config;
+package com.kairlec.contrller.admin;
 
-import com.kairlec.contrller.AdminControllerInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -12,32 +11,18 @@ import java.util.Arrays;
 import java.util.List;
 
 @Configuration
-public class WebMvcConfig implements WebMvcConfigurer {
+public class AdminInterceptorRegistry implements WebMvcConfigurer {
 
-    /**
-     * 自己定义的拦截器类
-     *
-     * @return
-     */
     @Bean
-    AdminControllerInterceptor AdminControllerInterceptor() {
-        return new AdminControllerInterceptor();
+    AdminInterceptor AdminControllerInterceptor() {
+        return new AdminInterceptor();
     }
 
     List<String> PathPatterns = new ArrayList<>(Arrays.asList(
             "/admin",
-            "/admin/*",
-            "/submit",
-            "/submit/*",
-            "/request",
-            "/request/*"
+            "/admin/*"
     ));
 
-    /**
-     * 添加拦截器
-     *
-     * @param registry
-     */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(AdminControllerInterceptor()).addPathPatterns(PathPatterns);

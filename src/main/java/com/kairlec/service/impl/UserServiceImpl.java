@@ -3,7 +3,6 @@ package com.kairlec.service.impl;
 import com.kairlec.dao.UserMapper;
 import com.kairlec.pojo.User;
 import com.kairlec.service.UserService;
-import com.kairlec.utils.PasswordCoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,11 +22,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> getAll() {
         try {
-            List<User> userList = userMapper.getAll();
-            for (User user : userList) {
-                user.setPassword(PasswordCoder.fromDatabase(user.getPassword()));
-            }
-            return userList;
+            return userMapper.getAll();
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -37,9 +32,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getUser(String username) {
         try {
-            User user = userMapper.getUser(username);
-            user.setPassword(PasswordCoder.fromDatabase(user.getPassword()));
-            return user;
+            return userMapper.getUser(username);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -49,8 +42,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public Integer insertUser(User user) {
         try {
-
-            user.setPassword(PasswordCoder.toDatabase(user.getPassword()));
             return userMapper.insertUser(user);
         } catch (Exception e) {
             e.printStackTrace();
@@ -81,7 +72,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public Integer updatePassword(User user) {
         try {
-            user.setPassword(PasswordCoder.toDatabase(user.getPassword()));
             return userMapper.updatePassword(user);
         } catch (Exception e) {
             e.printStackTrace();

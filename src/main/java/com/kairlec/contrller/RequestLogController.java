@@ -2,8 +2,8 @@ package com.kairlec.contrller;
 
 import com.alibaba.fastjson.JSON;
 import com.kairlec.exception.ServiceError;
+import com.kairlec.local.utils.DownloadUtils;
 import com.kairlec.local.utils.ResponseDataUtils;
-import com.kairlec.utils.file.DownloadFile;
 import com.kairlec.utils.file.GetFileContent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,9 +21,9 @@ import java.util.List;
 public class RequestLogController {
     private static Logger logger = LogManager.getLogger(RequestLogController.class);
 
-    @RequestMapping(value = "/get", produces = "text/plain; charset=utf-8")
+    @RequestMapping(value = "/content", produces = "text/plain; charset=utf-8")
     String get() {
-        return  ResponseDataUtils.successData("[" + GetFileContent.byPath("Log/request.log") + "]");
+        return ResponseDataUtils.successData("[" + GetFileContent.byPath("Log/request.log") + "]");
     }
 
     @RequestMapping(value = "/list", produces = "application/json; charset=utf-8")
@@ -41,10 +41,10 @@ public class RequestLogController {
         return ResponseDataUtils.successData(fileList);
     }
 
-    @RequestMapping(value = "/file/**")
+    @RequestMapping(value = "/download")
     String file(HttpServletRequest request, HttpServletResponse response) {
         try {
-            return ResponseDataUtils.Error(DownloadFile.HTTP("request/file", "Log/Request", request, response));
+            return ResponseDataUtils.Error(DownloadUtils.log(request, response, "Log/Request"));
         } catch (IOException e) {
             e.printStackTrace();
             return ResponseDataUtils.Error(e);

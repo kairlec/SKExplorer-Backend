@@ -5,14 +5,25 @@ import com.kairlec.pojo.Json.FileInfo;
 import com.kairlec.utils.LocalConfig;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 
 
 public class GetFileInfo {
+    public static String getExt(Path path) {
+        String fileName = path.getFileName().toString();
+        int pos = fileName.lastIndexOf('.');
+        if (pos != -1) {
+            return fileName.substring(pos + 1);
+        } else {
+            return null;
+        }
+    }
 
-    private static String getType(String filename) {
-        if (filename.lastIndexOf('.') != -1) {
-            return filename.substring(filename.lastIndexOf('.') + 1);
+    public static String getExt(String fileName) {
+        int pos = fileName.lastIndexOf('.');
+        if (pos != -1) {
+            return fileName.substring(pos + 1);
         } else {
             return null;
         }
@@ -33,9 +44,13 @@ public class GetFileInfo {
         }
     }
 
-    public static FileInfo ByFile(File file) {
+    public static FileInfo ByPath(String root, Path path) {
+        return GetFileInfo.ByFile(root, path.toFile());
+    }
+
+    public static FileInfo ByFile(String root, File file) {
         FileInfo fileInfo = new FileInfo();
-        fileInfo.setPath(file.getPath().replace(LocalConfig.getConfigBean().getContentdir(), "").replaceAll("\\\\", "/"));
+        fileInfo.setPath(file.getPath().replace(root, "").replaceAll("\\\\", "/"));
         if (file.exists()) {
             fileInfo.setExist(true);
         } else {
@@ -46,23 +61,16 @@ public class GetFileInfo {
         if (file.isDirectory()) {
             fileInfo.setType("folder");
         } else {
-            fileInfo.setType(getType(fileInfo.getName()));
+            fileInfo.setType(getExt(fileInfo.getName()));
             if (fileInfo.getType() != null && fileInfo.getType().equals("Redirect")) {
                 fileInfo.setName(fileInfo.getName().substring(0, fileInfo.getName().lastIndexOf('.')));
                 //System.out.println(fileInfo.getName());
-                fileInfo.setType(getType(fileInfo.getName()));
-                fileInfo.setRedirect(true);
-            } else {
-                fileInfo.setRedirect(false);
+                fileInfo.setType(getExt(fileInfo.getName()));
             }
         }
         fileInfo.setSize(file.length());
         fileInfo.setEditTime(file.lastModified());
         return fileInfo;
-    }
-
-    public static FileInfo ByPath(String Path) {
-        return ByFile(new File(Path));
     }
 
 }

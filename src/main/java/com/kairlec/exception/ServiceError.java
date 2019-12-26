@@ -9,7 +9,7 @@ import com.kairlec.pojo.ResponseData;
 @JSONType(serializeEnumAsJavaBean = true)
 public class ServiceError extends ResponseData {
     //无异常
-    public static ServiceError NO_ERROR = new ServiceError(0, "OK", null);
+    public static ServiceError NO_ERROR = new ServiceError(0, "OK");
 
     //未指名的异常
     public static ServiceError UNSPECIFIED = new ServiceError(90001, "未指名的错误");
@@ -24,6 +24,7 @@ public class ServiceError extends ResponseData {
     public static ServiceError NOT_DIR = new ServiceError(10003, "不是文件夹");
     public static ServiceError NOT_FILE = new ServiceError(10004, "不是文件");
     public static ServiceError NOT_MULTIPART_FROM_DATA = new ServiceError(10005, "不是multipart/form-data请求");
+    public static ServiceError MISSING_REQUIRED_PARAMETERS = new ServiceError(10006, "缺少必要的参数");
 
     //登录异常
     public static ServiceError USERNAME_NOT_EXISTS = new ServiceError(30001, "用户名不存在");
@@ -56,5 +57,12 @@ public class ServiceError extends ResponseData {
         return new ServiceError(code, message);
     }
 
+    public static ServiceError Error(int code, String message, Object data) {
+        return new ServiceError(code, message, data);
+    }
+
+    public boolean OK() {
+        return this.getCode() == 0;
+    }
 
 }

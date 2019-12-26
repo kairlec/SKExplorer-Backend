@@ -8,22 +8,14 @@ import lombok.Data;
 
 @Data
 public class FileInfo {
-    @JSONField(name = "name")
     private String name;
-    @JSONField(name = "type")
     private String type;
-    @JSONField(name = "size")
     private long size = 0;
-    @JSONField(name = "editTime")
     private long editTime = 0;
-    @JSONField(name = "description")
     private String description;
-    @JSONField(name = "path")
     private String path;
     @JSONField(serialize = false)
     private boolean exist;
-    @JSONField(serialize = false, name = "redirect")
-    private boolean redirect;
 
     @Override
     public String toString() {

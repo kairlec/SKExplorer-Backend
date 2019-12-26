@@ -20,7 +20,7 @@ public class SKException extends RuntimeException {
      * 由业务错误ServiceError引发
      */
     public SKException(ServiceError serviceError) {
-        super();
+        super(serviceError.getMessage());
         this.serviceError = serviceError;
     }
 

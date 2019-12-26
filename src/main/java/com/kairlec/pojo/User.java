@@ -3,19 +3,17 @@ package com.kairlec.pojo;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.kairlec.utils.Network;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.util.DigestUtils;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
-    @JSONField(name = "username")
     private String username;
 
     @JSONField(serialize = false)
@@ -24,25 +22,18 @@ public class User {
     @JSONField(name = "IP")
     private String IP;
 
-    @JSONField(name = "lastLoginTime")
-    private Date lastLoginTime;
+    private LocalDateTime lastLoginTime;
 
-    @JSONField(name = "TokenId")
+    private String email;
+
     private String lastSessionId;
 
-    public static User getUser(HttpServletRequest request) {
-        User user = new User();
-        user.setUsername(request.getParameter("username"));
-        user.setPassword(request.getParameter("password"));
-        user.setIP(Network.getIpAddress(request));
-        user.setLastLoginTime(new Date());
-        user.setLastSessionId(request.getSession(true).getId());
-        return user;
+    public void updatePassword(String password) {
+        this.password = DigestUtils.md5DigestAsHex(password.getBytes());
     }
 
-    public User(String username, String password) {
-        this.username = username;
-        this.password = password;
+    public boolean equalsPassword(String password){
+        return this.password.equals(DigestUtils.md5DigestAsHex(password.getBytes()));
     }
 
     @Override

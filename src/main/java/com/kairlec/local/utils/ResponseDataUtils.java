@@ -19,10 +19,11 @@ public abstract class ResponseDataUtils {
         } catch (Exception exception) {
             exception.printStackTrace();
         }
-        return ServiceError.Error(90003, expMessage);
+        e.printStackTrace();
+        return ServiceError.Error(90003, e.getMessage(), expMessage);
     }
 
-    public static String OK(){
+    public static String OK() {
         return ServiceError.NO_ERROR.toString();
     }
 
@@ -34,7 +35,7 @@ public abstract class ResponseDataUtils {
         return ServiceError.Error(code, message).toString();
     }
 
-    public static String Error(ServiceError serviceError){
+    public static String Error(ServiceError serviceError) {
         return serviceError.toString();
     }
 
