@@ -25,7 +25,7 @@
         <property name="log_pattern">%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] %C.%M[%L line] - %m%n</property>
 
         <!-- 日志默认切割的最小单位 -->
-        <property name="every_file_size">20MB</property>
+        <property name="every_file_size">3MB</property>
         <!-- 日志默认输出级别 -->
         <property name="output_log_level">DEBUG</property>
 
@@ -39,7 +39,7 @@
         <!-- 日志默认同类型日志,多久生成一个新的日志文件,这个配置需要和filePattern结合使用;
                 如果设置为1,filePattern是%d{yyyy-MM-dd}到天的格式,则间隔一天生成一个文件
                 如果设置为12,filePattern是%d{yyyy-MM-dd-HH}到小时的格式,则间隔12小时生成一个文件 -->
-        <property name="rolling_timeInterval">12</property>
+        <property name="rolling_timeInterval">6</property>
         <!-- 日志默认同类型日志,是否对封存时间进行调制,若为true,则封存时间将以0点为边界进行调整,
                 如:现在是早上3am,interval是4,那么第一次滚动是在4am,接着是8am,12am...而不是7am -->
         <property name="rolling_timeModulate">true</property>
@@ -93,13 +93,13 @@
         <!-- FrontEnd日志默认存放路径(FrontEnd级别日志) -->
         <property name="frontend_fileName">${basePath}/frontend.log</property>
         <!-- FrontEnd日志默认压缩路径,将超过指定文件大小的日志,自动存入按"年月"建立的文件夹下面并进行压缩,作为存档 -->
-        <property name="frontend_filePattern">${basePath}/FrontEnd/frontend-%d{yyyy-MM-dd}-%i.log.gz</property>
+        <property name="frontend_filePattern">${basePath}/FrontEnd/frontend-%d{yyyy-MM-dd-HH}-%i.log.gz</property>
         <!-- FrontEnd日志默认同一文件夹下可以存放的数量,不设置此属性则默认为7个 -->
         <property name="frontend_max">100</property>
         <!-- 日志默认同类型日志,多久生成一个新的日志文件,这个配置需要和filePattern结合使用;
                 如果设置为1,filePattern是%d{yyyy-MM-dd}到天的格式,则间隔一天生成一个文件
                 如果设置为12,filePattern是%d{yyyy-MM-dd-HH}到小时的格式,则间隔12小时生成一个文件 -->
-        <property name="frontend_timeInterval">1</property>
+        <property name="frontend_timeInterval">6</property>
         <!-- 日志默认同类型日志,是否对封存时间进行调制,若为true,则封存时间将以0点为边界进行调整,
                 如:现在是早上3am,interval是4,那么第一次滚动是在4am,接着是8am,12am...而不是7am -->
         <property name="frontend_timeModulate">true</property>
@@ -108,13 +108,13 @@
         <!-- REQUEST日志默认存放路径(REQUEST级别日志) -->
         <property name="request_fileName">${basePath}/request.log</property>
         <!-- REQUEST日志默认压缩路径,将超过指定文件大小的日志,自动存入按"年月"建立的文件夹下面并进行压缩,作为存档 -->
-        <property name="request_filePattern">${basePath}/Request/request-%d{yyyy-MM-dd}-%i.log.gz</property>
+        <property name="request_filePattern">${basePath}/Request/request-%d{yyyy-MM-dd-HH}-%i.log.gz</property>
         <!-- Error日志默认同一文件夹下可以存放的数量,不设置此属性则默认为7个 -->
-        <property name="request_max">100</property>
+        <property name="request_max">3000</property>
         <!-- 日志默认同类型日志,多久生成一个新的日志文件,这个配置需要和filePattern结合使用;
                 如果设置为1,filePattern是%d{yyyy-MM-dd}到天的格式,则间隔一天生成一个文件
                 如果设置为12,filePattern是%d{yyyy-MM-dd-HH}到小时的格式,则间隔12小时生成一个文件 -->
-        <property name="request_timeInterval">1</property>
+        <property name="request_timeInterval">3</property>
         <!-- 日志默认同类型日志,是否对封存时间进行调制,若为true,则封存时间将以0点为边界进行调整,
                 如:现在是早上3am,interval是4,那么第一次滚动是在4am,接着是8am,12am...而不是7am -->
         <property name="request_timeModulate">true</property>

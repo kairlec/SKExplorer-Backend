@@ -5,9 +5,9 @@
     <update id="init">
         create table if not exists description_map
         (
-            path varchar(256) not null primary key,
-            description varchar(512) not null
-        )
+            path varchar(255) not null primary key,
+            description varchar(255) not null
+        )ENGINE=InnoDB DEFAULT CHARSET=utf8
     </update>
 
     <select id="getAll" resultType="com.kairlec.pojo.DescriptionMap">
