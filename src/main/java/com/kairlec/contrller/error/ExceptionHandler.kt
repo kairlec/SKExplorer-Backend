@@ -1,5 +1,6 @@
 package com.kairlec.contrller.error
 
+import com.kairlec.`interface`.ResponseDataInterface
 import com.kairlec.local.utils.ResponseDataUtils
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.ResponseBody
 class ExceptionHandler {
     @ExceptionHandler
     @ResponseBody
-    fun exception(e: Exception): String {
+    fun exception(e: Exception): ResponseDataInterface {
         return ResponseDataUtils.error(e)
     }
 }

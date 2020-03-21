@@ -1,34 +1,42 @@
 package com.kairlec.pojo
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.annotation.JSONField;
-import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.kairlec.annotation.NoArg
-import org.springframework.util.DigestUtils;
-
+import com.kairlec.utils.VerifyAlgorithmEnum
+import com.kairlec.utils.VerifyUtils
+import com.kairlec.utils.randomString
 import java.time.LocalDateTime;
 
-@NoArg
 data class User(
         var username: String,
-        @JSONField(serialize = false)
         var password: String,
-        @JSONField(name = "IP")
-        var IP: String? = null,
+        var ip: String? = null,
         var lastLoginTime: LocalDateTime? = null,
-        var email: String,
-        var lastSessionId: String? = null
+        var lastSessionId: String? = null,
+        var passwordEncoded: Boolean,
+        var salt: String
 ) {
+    fun encode() {
+        if (!passwordEncoded) {
+            password = VerifyUtils.getStringVerifyAsHex(username + password, VerifyAlgorithmEnum.SHA_1)
+            passwordEncoded = true
+        }
+    }
 
-    fun updatePassword(password: String) {
-        this.password = DigestUtils.md5DigestAsHex(password.toByteArray())
+    fun updatePassword(password: String, encode: Boolean = true) {
+        if (encode) {
+            this.password = VerifyUtils.getStringVerifyAsHex(username + password, VerifyAlgorithmEnum.SHA_1)
+        } else {
+            this.password = password
+        }
+        passwordEncoded = encode
+        salt = ('a'..'z').randomString(3)
     }
 
     fun equalsPassword(password: String): Boolean {
-        return this.password == DigestUtils.md5DigestAsHex(password.toByteArray())
+        return VerifyUtils.verifyString(this.username + password, VerifyAlgorithmEnum.SHA_1, this.password)
     }
 
-    override fun toString(): String {
-        return JSON.toJSONString(this, SerializerFeature.WriteMapNullValue)
+    companion object {
+        val DefaultUserAdmin
+            get() = User("admin", "admin", null, null, null, false, ('a'..'z').randomString(3))
     }
 }

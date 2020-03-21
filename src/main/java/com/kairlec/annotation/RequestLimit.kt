@@ -9,4 +9,7 @@ package com.kairlec.annotation
 
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION)
-annotation class RequestLimit(val seconds: Long, val maxCount: Long)
+annotation class RequestLimit(
+        val seconds: Long,
+        val maxCount: Long
+)

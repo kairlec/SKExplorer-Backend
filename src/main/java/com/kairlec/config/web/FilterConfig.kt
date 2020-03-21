@@ -4,6 +4,7 @@ import com.kairlec.pojo.json.HTTPInfo
 import org.apache.catalina.filters.RemoteIpFilter
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
+import org.springframework.boot.SpringBootConfiguration
 import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -12,12 +13,13 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 /**
- *@program: SKExplorer
- *@description: 过滤器配置
- *@author: Kairlec
- *@create: 2020-03-08 18:05
+ * @program: SKExplorer
+ * @description: 过滤器配置
+ * @author: Kairlec
+ * @create: 2020-03-08 18:05
+ * @suppress
  */
-@Configuration
+@SpringBootConfiguration
 open class FilterConfig {
     @Bean
     open fun remoteIpFilter(): RemoteIpFilter {
@@ -47,7 +49,7 @@ open class FilterConfig {
             response.setHeader("Access-Control-Allow-Headers", "Access-Control,x-ijt")
             response.setHeader("Cache-Control", "no-cache")
             filterChain.doFilter(servletRequest, servletResponse)
-            logger.log(Level.getLevel("REQUEST"), HTTPInfo(servletRequest, response).toString())
+            logger.log(Level.getLevel("REQUEST"), HTTPInfo(servletRequest, response).json)
         }
     }
 

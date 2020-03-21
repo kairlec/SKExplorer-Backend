@@ -1,7 +1,8 @@
 package com.kairlec.local.utils
 
 
-import com.kairlec.utils.file.GetFileContent
+import com.kairlec.config.editable.EditableConfig
+import com.kairlec.utils.content
 import org.apache.logging.log4j.LogManager
 import org.springframework.util.StringUtils
 import java.io.File
@@ -51,19 +52,19 @@ class MultipartFileSender private constructor(private val filepath: Path, privat
         }
 
         //判断是否重定向
-        if (true) {
-            val ext = SKFileUtils.getExt(filepath)
-            if (ext != null && ext == "Redirect") {
-                val str = GetFileContent.byFile(filepath.toFile())
-                response.sendRedirect(str)
-                logger.info("Filepath {} has redirect", filepath.toAbsolutePath().toString())
-                return
+        if (EditableConfig.config.systemConfig.redirectEnable) {
+            SKFileUtils.getExt(filepath)?.let {
+                if (it == "Redirect") {
+                    response.sendRedirect(filepath.toFile().content())
+                    logger.info("Filepath {} has redirect", filepath.toAbsolutePath().toString())
+                    return
+                }
             }
         }
         val length = Files.size(filepath)
         val fileName = filepath.fileName.toString()
         val lastModifiedObj = Files.getLastModifiedTime(filepath)
-        if (StringUtils.isEmpty(fileName) || lastModifiedObj == null) {
+        if (StringUtils.isEmpty(fileName)) {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
             return
         }
@@ -137,8 +138,8 @@ class MultipartFileSender private constructor(private val filepath: Path, privat
                 for (part in range.substring(6).split(",".toRegex()).toTypedArray()) {
                     // Assuming a file with length of 100, the following examples returns bytes at:
                     // 50-80 (50 to 80), 40- (40 to length=100), -20 (length-20=80 to length=100).
-                    var start = Range.sublong(part, 0, part.indexOf("-"))
-                    var end = Range.sublong(part, part.indexOf("-") + 1, part.length)
+                    var start = Range.subLong(part, 0, part.indexOf("-"))
+                    var end = Range.subLong(part, part.indexOf("-") + 1, part.length)
                     if (start == -1L) {
                         start = length - end
                         end = length - 1
@@ -172,7 +173,7 @@ class MultipartFileSender private constructor(private val filepath: Path, privat
         } else if (!contentType!!.startsWith("image")) {
             // Else, expect for images, determine content disposition. If content type is supported by
             // the browser, then set to inline, else attachment which will pop a 'save as' dialogue.
-            val accept = request!!.getHeader("Accept")
+            val accept = request.getHeader("Accept")
             disposition = if (accept != null && HttpUtils.accepts(accept, contentType!!)) "inline" else "attachment"
         }
         logger.debug("Content-Type : {}", contentType)
@@ -180,19 +181,19 @@ class MultipartFileSender private constructor(private val filepath: Path, privat
         response.reset()
         response.bufferSize = DEFAULT_BUFFER_SIZE
         response.setHeader("Content-Type", contentType)
-        response.setHeader("Content-Disposition", disposition + ";filename=\"" + URLEncoder.encode(String(fileName.toByteArray(), StandardCharsets.ISO_8859_1), StandardCharsets.ISO_8859_1) + "\"")
+        response.setHeader("Content-Disposition", """$disposition;filename="${URLEncoder.encode(String(fileName.toByteArray(), StandardCharsets.ISO_8859_1), StandardCharsets.ISO_8859_1)}"""")
         logger.debug("Content-Disposition : {}", disposition)
         response.setHeader("Accept-Ranges", "bytes")
         response.setHeader("ETag", URLEncoder.encode(String(fileName.toByteArray(), StandardCharsets.ISO_8859_1), StandardCharsets.ISO_8859_1))
         response.setDateHeader("Last-Modified", lastModified)
         response.setDateHeader("Expires", System.currentTimeMillis() + DEFAULT_EXPIRE_TIME)
-        RandomAccessFile(filepath!!.toFile(), "r").use { input ->
+        RandomAccessFile(filepath.toFile(), "r").use { input ->
             response.outputStream.use { output ->
                 if (ranges.isEmpty() || ranges[0] === full) {
                     // Return full file.
                     logger.info("Return full file")
                     response.contentType = contentType
-                    response.setHeader("Content-Range", "bytes " + full.start + "-" + full.end + "/" + full.total)
+                    response.setHeader("Content-Range", "bytes ${full.start}-${full.end}/${full.total}")
                     response.setHeader("Content-Length", full.length.toString())
                     Range.copy(input, output, length, full.start, full.length)
                 } else if (ranges.size == 1) {
@@ -201,7 +202,7 @@ class MultipartFileSender private constructor(private val filepath: Path, privat
                     val r = ranges[0]
                     logger.info("Return 1 part of file : from ({}) to ({})", r.start, r.end)
                     response.contentType = contentType
-                    response.setHeader("Content-Range", "bytes " + r.start + "-" + r.end + "/" + r.total)
+                    response.setHeader("Content-Range", "bytes ${r.start}-${r.end}/${r.total}")
                     response.setHeader("Content-Length", r.length.toString())
                     response.status = HttpServletResponse.SC_PARTIAL_CONTENT // 206.
                     // Copy single part range.
@@ -222,7 +223,7 @@ class MultipartFileSender private constructor(private val filepath: Path, privat
                         sos.println()
                         sos.println("--$MULTIPART_BOUNDARY")
                         sos.println("Content-Type: $contentType")
-                        sos.println("Content-Range: bytes " + r.start + "-" + r.end + "/" + r.total)
+                        sos.println("Content-Range: bytes ${r.start}-${r.end}/${r.total}")
                         // Copy single part range of multi part range.
                         Range.copy(input, output, length, r.start, r.length)
                     }
@@ -235,14 +236,13 @@ class MultipartFileSender private constructor(private val filepath: Path, privat
         }
     }
 
-    private class Range(var start: Long, var end: Long, total: Long) {
-        var length: Long
-        var total: Long
+    private class Range(var start: Long, var end: Long, var total: Long) {
+        var length: Long = end - start + 1
 
         companion object {
-            fun sublong(value: String, beginIndex: Int, endIndex: Int): Long {
+            fun subLong(value: String, beginIndex: Int, endIndex: Int): Long {
                 val substring = value.substring(beginIndex, endIndex)
-                return if (substring.length > 0) substring.toLong() else -1
+                return if (substring.isNotEmpty()) substring.toLong() else -1
             }
 
             fun copy(input: RandomAccessFile, output: OutputStream, inputSize: Long, start: Long, length: Long) {
@@ -271,17 +271,6 @@ class MultipartFileSender private constructor(private val filepath: Path, privat
             }
         }
 
-        /**
-         * Construct a byte range.
-         *
-         * @param start Start of the byte range.
-         * @param end   End of the byte range.
-         * @param total Total length of the byte source.
-         */
-        init {
-            length = end - start + 1
-            this.total = total
-        }
     }
 
     private object HttpUtils {

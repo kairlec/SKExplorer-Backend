@@ -1,12 +1,12 @@
 package com.kairlec.contrller.error
 
 import com.kairlec.exception.ServiceErrorEnum
+import com.kairlec.`interface`.ResponseDataInterface
 import com.kairlec.local.utils.ResponseDataUtils
 import org.springframework.boot.web.servlet.error.ErrorController
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
-import javax.servlet.http.HttpServletRequest
 
 /**
  *@program: SKExplorer
@@ -22,7 +22,7 @@ class NotFoundExceptionHandler : ErrorController {
 
     @RequestMapping(value = ["/error"])
     @ResponseBody
-    fun error(request: HttpServletRequest): String {
-        return ResponseDataUtils.error(ServiceErrorEnum.UNKNOWN_REQUEST.data(request.requestURI))
+    fun error(): ResponseDataInterface {
+        return ResponseDataUtils.error(ServiceErrorEnum.UNKNOWN_REQUEST)
     }
 }

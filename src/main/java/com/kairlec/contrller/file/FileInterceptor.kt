@@ -22,7 +22,7 @@ class FileInterceptor : HandlerInterceptor {
         return if (checkStatus.OK()) {
             true
         } else {
-            response.writer.write(ResponseDataUtils.error(checkStatus))
+            response.writer.write(ResponseDataUtils.error(checkStatus).json)
             false
         }
     }

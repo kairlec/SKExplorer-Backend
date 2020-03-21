@@ -1,9 +1,7 @@
 package com.kairlec.exception
 
-import com.alibaba.fastjson.JSON
-import com.alibaba.fastjson.annotation.JSONType
-import com.alibaba.fastjson.serializer.SerializerFeature
-import com.kairlec.interfaca.ResponseDataInterface
+import com.fasterxml.jackson.annotation.JsonFormat
+import com.kairlec.`interface`.ResponseDataInterface
 import java.io.ByteArrayOutputStream
 import java.io.PrintWriter
 
@@ -13,7 +11,7 @@ import java.io.PrintWriter
  *@author: Kairlec
  *@create: 2020-03-08 18:16
  */
-@JSONType(serializeEnumAsJavaBean = true)
+@JsonFormat(shape = JsonFormat.Shape.OBJECT)
 enum class ServiceErrorEnum(override val code: Int, override val msg: String, override var data: Any? = null) : ResponseDataInterface {
     //无异常
     NO_ERROR(0, "OK"),
@@ -63,10 +61,6 @@ enum class ServiceErrorEnum(override val code: Int, override val msg: String, ov
 
     fun OK(): Boolean {
         return code == 0
-    }
-
-    override fun toString(): String {
-        return JSON.toJSONString(this, SerializerFeature.WriteMapNullValue)
     }
 
     fun throwout(): Nothing {

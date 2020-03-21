@@ -1,11 +1,14 @@
 package com.kairlec.contrller.log
 
+import com.kairlec.annotation.JsonRequestMapping
 import com.kairlec.exception.ServiceErrorEnum
+import com.kairlec.`interface`.ResponseDataInterface
 import com.kairlec.local.utils.MultipartFileSender
-import com.kairlec.local.utils.RequestUtils
 import com.kairlec.local.utils.ResponseDataUtils
 import com.kairlec.local.utils.SKFileUtils
-import com.kairlec.utils.file.GetFileContent
+import com.kairlec.utils.content
+import com.kairlec.utils.get
+import com.kairlec.utils.getSourcePath
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
 import org.springframework.web.bind.annotation.RequestMapping
@@ -22,40 +25,33 @@ import javax.servlet.http.HttpServletResponse
  *@create: 2020-03-08 18:12
  */
 
-@RequestMapping("/ferror")
+@JsonRequestMapping(value = ["/ferror"])
 @RestController
 class ErrorLogController {
     @RequestMapping(value = ["/content"])
-    fun get(): String {
-        return ResponseDataUtils.ok("[" + GetFileContent.byPathString("Log/frontend.log") + "]")
-    }
+    fun get() = ResponseDataUtils.ok("[" + File("Log/frontend.log").content() + "]")
+
 
     @RequestMapping(value = ["/list"])
-    fun list(): String {
+    fun list(): ResponseDataInterface {
         val fileList: MutableList<String> = ArrayList()
         val file = File("Log/FrontEnd")
         if (file.exists()) {
-            val files = file.listFiles()
-            if (files != null) {
-                for (subFile in files) {
-                    fileList.add(subFile.name)
-                }
+            file.listFiles()?.let { files ->
+                files.forEach { fileList.add(it.name) }
             }
         }
         return ResponseDataUtils.ok(fileList)
     }
 
     @RequestMapping(value = ["/download"])
-    fun file(request: HttpServletRequest, response: HttpServletResponse) {
-        val sourcePath = RequestUtils.getSourcePath(request) ?: ServiceErrorEnum.MISSING_REQUIRED_PARAMETERS.throwout()
-        MultipartFileSender.fromPath(SKFileUtils.getLogPath("Log/FrontEnd", sourcePath), request, response).serveResource()
-    }
+    fun file(request: HttpServletRequest, response: HttpServletResponse) = MultipartFileSender.fromPath(SKFileUtils.getLogPath("Log/FrontEnd", request.getSourcePath()), request, response).serveResource()
 
     @RequestMapping(value = ["/submit"])
-    fun post(request: HttpServletRequest): String {
-        val json = request.getParameter("object") ?: return ResponseDataUtils.error(ServiceErrorEnum.UNKNOWN_REQUEST)
+    fun post(request: HttpServletRequest): ResponseDataInterface {
+        val json = request["object"] ?: ServiceErrorEnum.UNKNOWN_REQUEST.throwout()
         logger.log(Level.getLevel("FRONTEND"), json)
-        return ResponseDataUtils.ok(Date().time)
+        return ResponseDataUtils.ok()
     }
 
     companion object {

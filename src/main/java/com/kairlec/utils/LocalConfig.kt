@@ -1,44 +1,57 @@
 package com.kairlec.utils
 
-import com.kairlec.service.impl.DescriptionMapServiceImpl
-import com.kairlec.service.impl.MimeMapServiceImpl
-import com.kairlec.service.impl.UserServiceImpl
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.core.JsonParseException
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import org.apache.logging.log4j.LogManager
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import javax.annotation.PostConstruct
+import java.text.DateFormat
 
 @Component
 class LocalConfig {
-    @Autowired
-    private lateinit var descriptionMapServiceTemp: DescriptionMapServiceImpl
-
-    @Autowired
-    private lateinit var mimeMapServiceTemp: MimeMapServiceImpl
-
-    @Autowired
-    private lateinit var userServiceTemp: UserServiceImpl
-
-    @PostConstruct
-    fun beforeInit() {
-        descriptionMapService = descriptionMapServiceTemp
-        userService = userServiceTemp
-        mimeMapService = mimeMapServiceTemp
-        if (descriptionMapService.init() == null) {
-            logger.warn("DescriptionMapService init result null")
-        }
-        if (userService.init() == null) {
-            logger.warn("UserService init result null")
-        }
-        if (mimeMapService.init() == null) {
-            logger.warn("MimeMapService init result null")
-        }
-    }
 
     companion object {
+        val objectMapper: ObjectMapper =
+                jacksonObjectMapper()
+                        .setSerializationInclusion(JsonInclude.Include.ALWAYS)
+                        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                        .disable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL)
+                        .setDateFormat(DateFormat.getDateTimeInstance())
+
+
+        fun String.Companion.toJSON(`object`: Any): String {
+            return objectMapper.writeValueAsString(`object`)
+        }
+
+        inline fun <reified T> String.toObject(): T? {
+            return try {
+                objectMapper.readValue(this)
+            } catch (e: JsonParseException) {
+                null
+            }
+        }
+
+        fun String.toJsonNode(): JsonNode? {
+            return try {
+                objectMapper.readTree(this)
+            } catch (e: JsonParseException) {
+                null
+            }
+        }
+
+        fun String.toObjectNode(): ObjectNode? {
+            return try {
+                objectMapper.readTree(this) as ObjectNode
+            } catch (e: JsonParseException) {
+                null
+            }
+        }
+
         private val logger = LogManager.getLogger(LocalConfig::class.java)
-        lateinit var descriptionMapService: DescriptionMapServiceImpl
-        lateinit var mimeMapService: MimeMapServiceImpl
-        lateinit var userService: UserServiceImpl
     }
 }

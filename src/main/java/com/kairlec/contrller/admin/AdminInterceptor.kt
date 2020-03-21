@@ -22,14 +22,14 @@ class AdminInterceptor : HandlerInterceptor {
         return if (checkStatus.OK()) {
             true
         } else {
-            response.writer.write(ResponseDataUtils.error(checkStatus))
+            response.writer.write(ResponseDataUtils.error(checkStatus).json)
             false
         }
     }
 
     companion object {
         private val logger = LogManager.getLogger(AdminController::class.java)
-        private val blackAPIList: Array<String> = arrayOf("/admin/logout", "/admin/login", "/admin/login/key", "/admin/captcha", "/admin/captcha/fresh")
+        private val blackAPIList: Array<String> = arrayOf("/admin/logout", "/admin/login", "/admin/status", "/admin/login/key", "/admin/captcha", "/admin/captcha/fresh")
         var PathPatterns: List<String> = ArrayList(listOf(
                 "/admin",
                 "/admin/**"
