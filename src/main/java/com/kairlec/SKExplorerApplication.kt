@@ -22,15 +22,9 @@ import kotlin.system.exitProcess
  */
 @EnableConfigurationProperties
 @SpringBootApplication
-open class SKExplorerApplication {
-    companion object {
-        private val logger = LogManager.getLogger(SKExplorerApplication::class.java)
+open class SKExplorerApplication
 
-        @JvmStatic
-        fun main(args: Array<String>) {
-            val configurableApplicationContext = runApplication<SKExplorerApplication>(*args)
-            val configurableEnvironment = configurableApplicationContext.environment
-        }
-    }
-
+fun main(args: Array<String>) {
+    val configurableApplicationContext = runApplication<SKExplorerApplication>(*args)
+    val configurableEnvironment = configurableApplicationContext.environment
 }

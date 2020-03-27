@@ -25,13 +25,14 @@ object ConfigDao : DAOInitializeable {
 
     lateinit var Instance: Config
     private var readyEditCounts = 0
-    private val configFilePath = Paths.get(StartupConfigFactory.Instance.dataDirPath.toString(), "config.json")
+    private lateinit var configFilePath: Path
 
     fun readyEdit() {
         readyEditCounts++
     }
 
     override fun daoInit() {
+        configFilePath = Paths.get(StartupConfigFactory.Instance.dataDirPath.toString(), "config.json")
         try {
             if (Files.notExists(configFilePath)) {
                 Files.createDirectories(configFilePath.parent)
