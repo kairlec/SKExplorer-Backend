@@ -1,6 +1,5 @@
 package com.kairlec.local.utils
 
-import com.kairlec.config.editable.EditableConfig
 import com.kairlec.config.startup.StartupConfigFactory
 import com.kairlec.dao.ConfigDao
 import com.kairlec.model.vo.Captcha
@@ -13,6 +12,7 @@ import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpSession
+
 
 object UserUtils {
     private val logger = LogManager.getLogger(UserUtils::class.java)
@@ -63,7 +63,7 @@ object UserUtils {
         if (password == null) {
             ServiceErrorEnum.NULL_PASSWORD.throwout() //空的密码
         }
-        val user = EditableConfig.getUser(username)
+        val user = LocalConfig.configServiceImpl.getUser(username)
                 ?: ServiceErrorEnum.USERNAME_NOT_EXISTS.throwout() //错误的用户名
         val captcha = session.getAttribute("captcha")
         if (captcha is Captcha) {
@@ -86,7 +86,7 @@ object UserUtils {
         }
         user.ip = ip
         user.lastSessionId = session.id
-        EditableConfig.save()
+        LocalConfig.configServiceImpl.updateLoginInfo(user)
         return user
     }
 
@@ -101,7 +101,7 @@ object UserUtils {
             if (cookieArr.size != 4) {
                 return null
             }
-            val user = EditableConfig.config.adminUserArray.find { VerifyUtils.verifyString(it.username, VerifyAlgorithmEnum.MD5, cookieArr[0]) }
+            val user = LocalConfig.configServiceImpl.getUser { VerifyUtils.verifyString(it.username, VerifyAlgorithmEnum.MD5, cookieArr[0]) }
                     ?: return null
             if (request.IP != cookieArr[1]) {
                 return null

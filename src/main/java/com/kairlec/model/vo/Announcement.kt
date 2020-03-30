@@ -1,8 +1,14 @@
 package com.kairlec.model.vo
 
+import java.util.*
+
 data class Announcement(
         val id: String,
-        val content: String,
+        var content: String,
         val publicTime: Long,
-        val modifyTime: Long
-)
+        var modifyTime: Long
+) {
+    companion object {
+        fun newInstance(content: String, publicTime: Long, modifyTime: Long) = Announcement(UUID.randomUUID().toString(), content, publicTime, modifyTime)
+    }
+}

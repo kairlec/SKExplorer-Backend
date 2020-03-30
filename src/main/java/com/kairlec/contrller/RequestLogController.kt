@@ -1,10 +1,10 @@
 package com.kairlec.contrller
 
 import com.kairlec.annotation.JsonRequestMapping
-import com.kairlec.`interface`.ResponseDataInterface
+import com.kairlec.intf.ResponseDataInterface
+import com.kairlec.local.utils.FileUtils
 import com.kairlec.local.utils.MultipartFileSender
 import com.kairlec.local.utils.ResponseDataUtils.responseOK
-import com.kairlec.local.utils.SKFileUtils
 import com.kairlec.utils.content
 import com.kairlec.utils.getSourcePath
 import org.springframework.web.bind.annotation.RequestMapping
@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletResponse
 @RestController
 class RequestLogController {
     @RequestMapping(value = ["/content"])
-    fun get() = "[" + File("Log/request.log").content() + "]".responseOK
+    fun get() = "[" + File("Log/request.log").content + "]".responseOK
 
     @RequestMapping(value = ["/list"])
     fun list(): ResponseDataInterface {
@@ -39,5 +39,5 @@ class RequestLogController {
     }
 
     @RequestMapping(value = ["/download"])
-    fun file(request: HttpServletRequest, response: HttpServletResponse) = MultipartFileSender.fromPath(SKFileUtils.getLogPath("Log/Request", request.getSourcePath()), request, response).serveResource()
+    fun file(request: HttpServletRequest, response: HttpServletResponse) = MultipartFileSender.fromPath(FileUtils.getLogPath("Log/Request", request.getSourcePath().path), request, response).serveResource()
 }

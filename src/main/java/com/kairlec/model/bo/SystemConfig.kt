@@ -10,6 +10,11 @@ package com.kairlec.model.bo
 data class SystemConfig(
         var redirectEnable: Boolean
 ) {
+
+    fun updateTo(systemConfig: SystemConfig) {
+        this.redirectEnable = systemConfig.redirectEnable
+    }
+
     companion object {
         val Default
             get() = SystemConfig(true)

@@ -1,4 +1,4 @@
-package com.kairlec.`interface`;
+package com.kairlec.intf;
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.kairlec.utils.LocalConfig.Companion.toJSON

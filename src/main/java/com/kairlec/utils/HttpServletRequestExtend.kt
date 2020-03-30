@@ -1,6 +1,7 @@
 package com.kairlec.utils
 
 import com.kairlec.constant.ServiceErrorEnum
+import com.kairlec.model.vo.RelativePath
 import javax.servlet.http.HttpServletRequest
 
 /**
@@ -14,11 +15,11 @@ operator fun HttpServletRequest.get(parameter: String): String? {
     return this.getParameter(parameter)
 }
 
-fun HttpServletRequest.getSourcePath(): String {
-    return this["source"] ?: ServiceErrorEnum.MISSING_REQUIRED_PARAMETERS.throwout()
+fun HttpServletRequest.getSourcePath(): RelativePath {
+    return this["source"]?.let { RelativePath(it) } ?: ServiceErrorEnum.MISSING_REQUIRED_PARAMETERS.throwout()
 }
 
-fun HttpServletRequest.getTargetPath(): String {
-    return this["target"] ?: ServiceErrorEnum.MISSING_REQUIRED_PARAMETERS.throwout()
+fun HttpServletRequest.getTargetPath(): RelativePath {
+    return this["target"]?.let { RelativePath(it) } ?: ServiceErrorEnum.MISSING_REQUIRED_PARAMETERS.throwout()
 }
 

@@ -104,7 +104,7 @@ object WatchDir {
                                 logger.error("""error in file "$child" : ${e.message}""", e)
                             }
                         }
-                        keys.find { it.sameWatch(child) }?.let {
+                        keys.find { it.sameWatch(child)||it.sameWatch(dir) }?.let {
                             registeredPath.eventCall.invoke(child, kind)
                         }
                     }

@@ -1,5 +1,8 @@
 package com.kairlec.local.utils
 
+import com.kairlec.config.startup.StartupConfigFactory
+import com.kairlec.model.bo.AbsolutePath
+import com.kairlec.model.vo.RelativePath
 import org.apache.logging.log4j.LogManager
 import java.nio.file.Files
 import java.nio.file.Path
@@ -22,12 +25,24 @@ object FileUtils {
 
     fun isRoot(path: Path) = Files.isSameFile(path, Paths.get(contentPath))
 
-    fun warpPath2Response(path: Path): String {
-        val result = path.toAbsolutePath().toString().replace("""[\\\/]+""".toRegex(), "/").substring(contentPath.length)
+    fun packPath2Response(path: AbsolutePath): RelativePath {
+        val result = path.path.toAbsolutePath().toString().replace("""[\\\/]+""".toRegex(), "/").substring(contentPath.length)
         return if (result.startsWith("/")) {
-            result
+            RelativePath(result)
         } else {
-            "/$result"
+            RelativePath("/$result")
         }
+    }
+
+    fun unpackResponsePath(relativePath: String): AbsolutePath {
+        return AbsolutePath(Paths.get(StartupConfigFactory.Instance.contentDir, relativePath))
+    }
+
+    fun unpackResponsePath(relativePath: RelativePath): AbsolutePath {
+        return AbsolutePath(Paths.get(StartupConfigFactory.Instance.contentDir, relativePath.path))
+    }
+
+    fun getLogPath(logPath: String, relativePath: String): Path {
+        return Paths.get(logPath, relativePath)
     }
 }

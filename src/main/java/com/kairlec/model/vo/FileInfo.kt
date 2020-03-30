@@ -1,12 +1,15 @@
 package com.kairlec.model.vo;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import com.kairlec.local.jackson.RelativePathSerializer
 
 data class FileInfo(
         val name: String,
         val type: String? = null,
         val size: Long = 0,
         val editTime: Long = 0,
-        val path: String
+        val path: RelativePath,
+        val extraInfo: ExtraInfo
 ) : Comparable<FileInfo> {
     override fun compareTo(other: FileInfo): Int {
         if (this.type == null || other.type == null) {

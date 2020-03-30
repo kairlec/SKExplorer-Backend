@@ -71,7 +71,6 @@ open class StartupConfigFactory {
     companion object {
         private val logger = LogManager.getLogger(StartupConfigFactory::class.java)
         lateinit var Instance: StartupConfig
-        lateinit var applicationContext: ApplicationContext
     }
 
 }

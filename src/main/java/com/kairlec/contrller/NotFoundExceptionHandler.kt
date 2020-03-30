@@ -1,7 +1,7 @@
 package com.kairlec.contrller
 
 import com.kairlec.constant.ServiceErrorEnum
-import com.kairlec.`interface`.ResponseDataInterface
+import com.kairlec.intf.ResponseDataInterface
 import com.kairlec.annotation.JsonRequestMapping
 import org.springframework.boot.web.servlet.error.ErrorController
 import org.springframework.stereotype.Controller

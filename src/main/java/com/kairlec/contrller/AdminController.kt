@@ -3,13 +3,18 @@ package com.kairlec.contrller
 import com.kairlec.annotation.JsonRequestMapping
 import com.kairlec.model.vo.Captcha
 import com.kairlec.constant.ServiceErrorEnum
-import com.kairlec.`interface`.ResponseDataInterface
-import com.kairlec.config.editable.EditableConfig
+import com.kairlec.intf.ResponseDataInterface
 import com.kairlec.dao.ConfigDao
 import com.kairlec.local.utils.ResponseDataUtils.responseOK
 import com.kairlec.local.utils.UserUtils
 import com.kairlec.model.bo.StartupConfig
+import com.kairlec.model.bo.SystemConfig
 import com.kairlec.model.bo.User
+import com.kairlec.model.vo.Announcement
+import com.kairlec.service.impl.AnnouncementServiceImpl
+import com.kairlec.service.impl.ConfigServiceImpl
+import com.kairlec.utils.LocalConfig
+import com.kairlec.utils.LocalConfig.Companion.toObject
 import com.kairlec.utils.get
 import org.apache.logging.log4j.LogManager
 import org.springframework.beans.factory.annotation.Autowired
@@ -31,6 +36,12 @@ import javax.servlet.http.HttpSession
 class AdminController {
     @Autowired
     private lateinit var startupConfig: StartupConfig
+
+    @Autowired
+    private lateinit var configServiceImpl: ConfigServiceImpl
+
+    @Autowired
+    private lateinit var announcementServiceImpl: AnnouncementServiceImpl
 
     @RequestMapping(value = ["/captcha"])
     fun captcha(session: HttpSession, response: HttpServletResponse): ResponseDataInterface {
@@ -111,39 +122,37 @@ class AdminController {
         return user.username.responseOK
     }
 
-    @RequestMapping(value = ["/config/{action}/{type}"])
-    fun config(request: HttpServletRequest, @PathVariable action: String, @PathVariable type: String): ResponseDataInterface {
-        when (action) {
-            "get" -> {
-                return when (type) {
-                    "all" -> EditableConfig.config.systemConfig.responseOK
-                    "redirect" -> EditableConfig.config.systemConfig.redirectEnable.responseOK
-                    else -> {
-                        ServiceErrorEnum.UNKNOWN_REQUEST.data(type).throwout()
-                    }
-                }
-            }
-            "update" -> {
-                return when (type) {
-                    "redirect" -> updateRedirect(request)
-                    else -> {
-                        ServiceErrorEnum.UNKNOWN_REQUEST.data(type).throwout()
-                    }
-                }
-            }
-            else -> {
-                ServiceErrorEnum.UNKNOWN_REQUEST.data(action).throwout()
-            }
-        }
+    @RequestMapping(value = ["/config/system/get"])
+    fun getSystemConfig(): ResponseDataInterface {
+        return configServiceImpl.getSystemConfig().responseOK
     }
 
 
-    private fun updateRedirect(request: HttpServletRequest): ResponseDataInterface {
-        val enable = request["redirect"]?.toBoolean() ?: ServiceErrorEnum.MISSING_REQUIRED_PARAMETERS.throwout()
-        EditableConfig.config.systemConfig.redirectEnable = enable
-        EditableConfig.save()
-        return enable.responseOK
+    @RequestMapping(value = ["/config/system/update"])
+    fun updateSystemConfig(@RequestBody systemConfig: SystemConfig): ResponseDataInterface {
+        configServiceImpl.setSystemConfig(systemConfig)
+        return systemConfig.responseOK
     }
+
+    @RequestMapping(value = ["/announcement/update"])
+    fun updateAnnouncement(@RequestBody announcement: Announcement): ResponseDataInterface {
+        announcementServiceImpl.update(announcement)
+        return announcement.responseOK
+    }
+
+    @RequestMapping(value = ["/announcement/add"])
+    fun addAnnouncement(request: HttpServletRequest): ResponseDataInterface {
+        val content = request["content"] ?: ServiceErrorEnum.MISSING_REQUIRED_PARAMETERS.data("content").throwout()
+        return announcementServiceImpl.add(content).responseOK
+    }
+
+    @RequestMapping(value = ["/announcement/remove"])
+    fun removeAnnouncement(request: HttpServletRequest): ResponseDataInterface {
+        val id = request["id"] ?: ServiceErrorEnum.MISSING_REQUIRED_PARAMETERS.data("id").throwout()
+        announcementServiceImpl.delete(id)
+        return null.responseOK
+    }
+
 
 
     companion object {

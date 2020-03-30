@@ -1,6 +1,6 @@
 package com.kairlec.config.startup
 
-import com.kairlec.`interface`.DAOInitializeable
+import com.kairlec.intf.DAOInitializeable
 import com.kairlec.model.bo.StartupConfig
 import com.kairlec.utils.ClassUtils
 import org.apache.logging.log4j.LogManager
@@ -24,15 +24,11 @@ open class StartupConfigInitializer {
     @Autowired
     private lateinit var startupConfig: StartupConfig
 
-    @Autowired
-    private lateinit var applicationContext: ApplicationContext
-
     private val logger = LogManager.getLogger(StartupConfigInitializer::class.java)
 
     @PostConstruct
     fun init() {
         StartupConfigFactory.Instance = startupConfig
-        StartupConfigFactory.applicationContext = applicationContext
         ClassUtils.scanClasses("com.kairlec.dao").forEach {
             if (DAOInitializeable::class.java.isAssignableFrom(it)) {
                 val kc = it.kotlin

@@ -1,9 +1,6 @@
 package com.kairlec.local.utils
 
 
-import com.kairlec.config.editable.EditableConfig
-import com.kairlec.utils.content
-import org.apache.commons.io.FilenameUtils
 import org.apache.logging.log4j.LogManager
 import org.springframework.util.StringUtils
 import java.io.File
@@ -24,6 +21,7 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 class MultipartFileSender private constructor(private val filepath: Path, private val request: HttpServletRequest, private val response: HttpServletResponse) {
+
     private var contentType: String? = null
 
     fun contentType(contentType: String): MultipartFileSender {
@@ -52,16 +50,6 @@ class MultipartFileSender private constructor(private val filepath: Path, privat
             response.sendError(HttpServletResponse.SC_NOT_FOUND)
         }
 
-        //判断是否重定向
-        if (EditableConfig.config.systemConfig.redirectEnable) {
-            FilenameUtils.getExtension(filepath.fileName.toString())?.let {
-                if (it == "Redirect") {
-                    response.sendRedirect(filepath.toFile().content())
-                    logger.info("Filepath {} has redirect", filepath.toAbsolutePath().toString())
-                    return
-                }
-            }
-        }
         val length = Files.size(filepath)
         val fileName = filepath.fileName.toString()
         val lastModifiedObj = Files.getLastModifiedTime(filepath)

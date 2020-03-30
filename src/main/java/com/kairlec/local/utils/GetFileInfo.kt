@@ -2,14 +2,16 @@ package com.kairlec.local.utils
 
 import com.kairlec.constant.ServiceErrorEnum
 import com.kairlec.model.vo.FileInfo
-import com.kairlec.local.utils.FileUtils.warpPath2Response
+import com.kairlec.local.utils.FileUtils.packPath2Response
+import com.kairlec.model.bo.AbsolutePath
+import com.kairlec.utils.LocalConfig
 import org.apache.commons.io.FilenameUtils
 import java.io.File
 
 
 val File.fileInfo: FileInfo
     get() {
-        val path = warpPath2Response(this.toPath())
+        val path = packPath2Response(AbsolutePath(this.toPath()))
         if (!this.exists()) {
             ServiceErrorEnum.FILE_NOT_EXISTS.throwout()
         }
@@ -26,5 +28,5 @@ val File.fileInfo: FileInfo
         }
         val size = this.length()
         val editTime = this.lastModified()
-        return FileInfo(name, type, size, editTime, path)
+        return FileInfo(name, type, size, editTime, path, LocalConfig.extraInfoServiceImpl.getExtraInfoDefault(path))
     }

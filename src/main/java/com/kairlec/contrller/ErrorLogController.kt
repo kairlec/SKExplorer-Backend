@@ -2,10 +2,10 @@ package com.kairlec.contrller
 
 import com.kairlec.annotation.JsonRequestMapping
 import com.kairlec.constant.ServiceErrorEnum
-import com.kairlec.`interface`.ResponseDataInterface
+import com.kairlec.intf.ResponseDataInterface
+import com.kairlec.local.utils.FileUtils
 import com.kairlec.local.utils.MultipartFileSender
 import com.kairlec.local.utils.ResponseDataUtils.responseOK
-import com.kairlec.local.utils.SKFileUtils
 import com.kairlec.utils.content
 import com.kairlec.utils.get
 import com.kairlec.utils.getSourcePath
@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletResponse
 @RestController
 class ErrorLogController {
     @RequestMapping(value = ["/content"])
-    fun get() = "[" + File("Log/frontend.log").content() + "]".responseOK
+    fun get() = "[" + File("Log/frontend.log").content + "]".responseOK
 
 
     @RequestMapping(value = ["/list"])
@@ -45,7 +45,7 @@ class ErrorLogController {
     }
 
     @RequestMapping(value = ["/download"])
-    fun file(request: HttpServletRequest, response: HttpServletResponse) = MultipartFileSender.fromPath(SKFileUtils.getLogPath("Log/FrontEnd", request.getSourcePath()), request, response).serveResource()
+    fun file(request: HttpServletRequest, response: HttpServletResponse) = MultipartFileSender.fromPath(FileUtils.getLogPath("Log/FrontEnd", request.getSourcePath().path), request, response).serveResource()
 
     @RequestMapping(value = ["/submit"])
     fun post(request: HttpServletRequest): ResponseDataInterface {

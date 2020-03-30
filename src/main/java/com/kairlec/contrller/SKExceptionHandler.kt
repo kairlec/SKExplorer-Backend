@@ -1,6 +1,6 @@
 package com.kairlec.contrller
 
-import com.kairlec.`interface`.ResponseDataInterface
+import com.kairlec.intf.ResponseDataInterface
 import com.kairlec.local.utils.ResponseDataUtils.responseError
 import org.apache.logging.log4j.LogManager
 import org.springframework.web.bind.annotation.ControllerAdvice

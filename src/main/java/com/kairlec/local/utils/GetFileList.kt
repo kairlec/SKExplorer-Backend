@@ -4,18 +4,17 @@ package com.kairlec.local.utils
 import com.kairlec.model.vo.FileInfo
 import com.kairlec.model.vo.FileList
 import com.kairlec.local.utils.FileUtils.isRoot
-import com.kairlec.local.utils.FileUtils.warpPath2Response
+import com.kairlec.model.bo.AbsolutePath
 import org.apache.commons.io.FilenameUtils
 import java.nio.file.Files
-import java.nio.file.Path
 
-fun Path.getFileInfoList(excludeFile: Array<String>, excludeDir: Array<String>, excludeExt: Array<String>): FileList {
-    val root = isRoot(this)
-    val localPath = warpPath2Response(this)
-    val fileList = FileList(root, ArrayList(), localPath)
+fun AbsolutePath.getFileInfoList(excludeFile: Array<String>, excludeDir: Array<String>, excludeExt: Array<String>): FileList {
+    val root = isRoot(this.path)
+    val localPath = this.toContentRelativePath()
+    val fileList = FileList(root, ArrayList(), localPath.path)
     val fileInfos = ArrayList<FileInfo>()
 
-    Files.newDirectoryStream(this).use { stream ->
+    Files.newDirectoryStream(this.path).use { stream ->
         stream.forEach {
             if (Files.isDirectory(it)) {
                 val subDirName = it.fileName.toString()

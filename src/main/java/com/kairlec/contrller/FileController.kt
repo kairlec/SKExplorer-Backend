@@ -1,13 +1,18 @@
 package com.kairlec.contrller
 
-import com.kairlec.`interface`.ResponseDataInterface
+import com.kairlec.intf.ResponseDataInterface
 import com.kairlec.annotation.JsonRequestMapping
 import com.kairlec.constant.ServiceErrorEnum
 import com.kairlec.local.utils.*
 import com.kairlec.local.utils.ResponseDataUtils.responseOK
+import com.kairlec.model.bo.AbsolutePath
 import com.kairlec.model.bo.StartupConfig
+import com.kairlec.model.vo.ExtraInfo
 import com.kairlec.model.vo.FileInfo
+import com.kairlec.service.impl.ExtraInfoServiceImpl
 import com.kairlec.utils.*
+import com.kairlec.utils.LocalConfig.Companion.configServiceImpl
+import com.kairlec.utils.LocalConfig.Companion.toObject
 import org.apache.logging.log4j.LogManager
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.RequestMapping
@@ -35,10 +40,13 @@ class FileController {
     @Autowired
     private lateinit var startupConfig: StartupConfig
 
+    @Autowired
+    private lateinit var extraInfoServiceImpl: ExtraInfoServiceImpl
+
     @RequestMapping(value = ["/list"])
     fun file(request: HttpServletRequest): ResponseDataInterface {
         val sourcePath = request.getSourcePath()
-        val realSourcePath = SKFileUtils.getContentPath(sourcePath)
+        val realSourcePath = sourcePath.toContentAbsolutePath().path
         logger.info("获取到的路径为$realSourcePath")
         if (Files.notExists(realSourcePath)) {
             ServiceErrorEnum.FILE_NOT_EXISTS.throwout()
@@ -46,7 +54,7 @@ class FileController {
         if (!Files.isDirectory(realSourcePath)) {
             ServiceErrorEnum.NOT_DIR.throwout()
         }
-        val fileList = realSourcePath.getFileInfoList(startupConfig.excludeFile, startupConfig.excludeDir, startupConfig.excludeExt)
+        val fileList = AbsolutePath(realSourcePath).getFileInfoList(startupConfig.excludeFile, startupConfig.excludeDir, startupConfig.excludeExt)
         return fileList.responseOK
     }
 
@@ -55,7 +63,7 @@ class FileController {
         val multiRequest = request as MultipartHttpServletRequest
         logger.info("收到上传命令")
         val sourcePath = request.getSourcePath()
-        val realSourcePath = SKFileUtils.getContentPath(sourcePath)
+        val realSourcePath = sourcePath.toContentAbsolutePath().path
         val isReplace = request["replace"]?.toBoolean() ?: false
         val files: MutableList<MultipartFile> = ArrayList()
         val a = multiRequest.fileNames //返回的数量与前端input数量相同, 返回的字符串即为前端input标签的name
@@ -89,8 +97,8 @@ class FileController {
     fun move(request: HttpServletRequest): ResponseDataInterface {
         val sourcePath = request.getSourcePath()
         val targetPath = request.getTargetPath()
-        val realSourcePath = SKFileUtils.getContentPath(sourcePath)
-        val realTargetPath = SKFileUtils.getContentPath(targetPath)
+        val realSourcePath = sourcePath.toContentAbsolutePath().path
+        val realTargetPath = targetPath.toContentAbsolutePath().path
         if (!Files.exists(realSourcePath)) {
             ServiceErrorEnum.FILE_NOT_EXISTS.throwout()
         }
@@ -106,7 +114,7 @@ class FileController {
     @RequestMapping(value = ["/delete"])
     fun delete(request: HttpServletRequest): ResponseDataInterface {
         val sourcePath = request.getSourcePath()
-        val filePath = SKFileUtils.getContentPath(sourcePath)
+        val filePath = sourcePath.toContentAbsolutePath().path
         if (Files.notExists(filePath)) {
             ServiceErrorEnum.FILE_NOT_EXISTS.throwout()
         }
@@ -118,8 +126,8 @@ class FileController {
     fun rename(request: HttpServletRequest): ResponseDataInterface {
         val sourcePath = request.getSourcePath()
         val targetName = request.getTargetPath()
-        val realSourcePath = SKFileUtils.getContentPath(sourcePath)
-        val realTargetPath = Paths.get(realSourcePath.parent.toString(), targetName)
+        val realSourcePath = sourcePath.toContentAbsolutePath().path
+        val realTargetPath = Paths.get(realSourcePath.parent.toString(), targetName.path)
         if (Files.notExists(realSourcePath)) {
             ServiceErrorEnum.FILE_NOT_EXISTS.throwout()
         }
@@ -133,7 +141,16 @@ class FileController {
     }
 
     @RequestMapping(value = ["/download"])
-    fun download(request: HttpServletRequest, response: HttpServletResponse) = MultipartFileSender.fromPath(SKFileUtils.getContentPath(request.getSourcePath()), request, response).serveResource()
+    fun download(request: HttpServletRequest, response: HttpServletResponse) {
+        val sourcePath = request.getSourcePath()
+        if (configServiceImpl.getSystemConfig().redirectEnable) {
+            val extraInfo = extraInfoServiceImpl.getExtraInfoDefault(sourcePath)
+            if (extraInfo.redirect) {
+                response.sendRedirect(extraInfo.redirectContent)
+            }
+        }
+        MultipartFileSender.fromPath(sourcePath.toContentAbsolutePath().path, request, response).serveResource()
+    }
 
     @RequestMapping(value = ["/create"])
     fun create(request: HttpServletRequest): ResponseDataInterface {
@@ -141,12 +158,12 @@ class FileController {
         val targetName = request.getTargetPath()
         val type = request["type"] ?: ServiceErrorEnum.MISSING_REQUIRED_PARAMETERS.throwout()
         val content = request["content"]
-        val realSourcePath = SKFileUtils.getContentPath(sourcePath)
+        val realSourcePath = sourcePath.toContentAbsolutePath().path
         val replace = request["replace"]?.toBoolean() ?: false
 
         when (type) {
             "file" -> {
-                val realTargetPath = Paths.get(realSourcePath.parent.toString(), targetName)
+                val realTargetPath = Paths.get(realSourcePath.parent.toString(), targetName.path)
                 if (Files.exists(realTargetPath)) {
                     if (replace) {
                         Files.delete(realTargetPath)
@@ -161,7 +178,7 @@ class FileController {
                 return realTargetPath.toFile().fileInfo.responseOK
             }
             "folder" -> {
-                val realTargetPath = Paths.get(realSourcePath.parent.toString(), targetName)
+                val realTargetPath = Paths.get(realSourcePath.parent.toString(), targetName.path)
                 if (Files.exists(realTargetPath)) {
                     if (replace) {
                         Files.delete(realTargetPath)
@@ -170,21 +187,6 @@ class FileController {
                     }
                 }
                 Files.createDirectory(realTargetPath)
-                return realTargetPath.toFile().fileInfo.responseOK
-            }
-            "redirect" -> {
-                val realTargetPath = Paths.get(realSourcePath.parent.toString(), "$targetName.Redirect")
-                if (Files.exists(realTargetPath)) {
-                    if (replace) {
-                        Files.delete(realTargetPath)
-                    } else {
-                        ServiceErrorEnum.FILE_ALREADY_EXIST.throwout()
-                    }
-                }
-                Files.createFile(realTargetPath)
-                content.let {
-                    Files.writeString(realTargetPath, content, Charsets.UTF_8)
-                }
                 return realTargetPath.toFile().fileInfo.responseOK
             }
             else -> {
@@ -196,11 +198,26 @@ class FileController {
     @RequestMapping(value = ["/content"], produces = ["text/plain"])
     fun content(request: HttpServletRequest): String {
         val sourcePath = request.getSourcePath()
-        val filePath = SKFileUtils.getContentPath(sourcePath)
+        val filePath = sourcePath.toContentAbsolutePath().path
         if (Files.notExists(filePath)) {
             ServiceErrorEnum.FILE_NOT_EXISTS.throwout()
         }
-        return filePath.toFile().content()
+        return filePath.toFile().content
+    }
+
+    @RequestMapping(value = ["/extraInfo/get"])
+    fun extraInfo(request: HttpServletRequest): ResponseDataInterface {
+        val sourcePath = request.getSourcePath()
+        return extraInfoServiceImpl.getExtraInfoDefault(sourcePath).responseOK
+    }
+
+    @RequestMapping(value = ["/extraInfo/update"])
+    fun updateExtraInfo(request: HttpServletRequest): ResponseDataInterface {
+        val sourcePath = request.getSourcePath()
+        val extraInfo = request["extra"]?.toObject<ExtraInfo>()
+                ?: ServiceErrorEnum.MISSING_REQUIRED_PARAMETERS.throwout()
+        extraInfoServiceImpl.setExtraInfo(sourcePath, extraInfo)
+        return extraInfo.responseOK
     }
 
     @RequestMapping(value = ["/verify"])
@@ -216,7 +233,7 @@ class FileController {
             }
         }
         verifyAlgorithm ?: ServiceErrorEnum.MISSING_REQUIRED_PARAMETERS.throwout()
-        val realSourcePath = SKFileUtils.getContentPath(sourcePath)
+        val realSourcePath = sourcePath.toContentAbsolutePath().path
         if (!Files.exists(realSourcePath)) {
             ServiceErrorEnum.FILE_NOT_EXISTS.throwout()
         }
