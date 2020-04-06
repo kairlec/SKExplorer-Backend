@@ -65,7 +65,7 @@ class FileController {
         return fileServiceImpl.rename(sourceDirOrFile, targetName)
     }
 
-    @RequestMapping(value = ["/download"])
+    @RequestMapping(value = ["/download"], method = [RequestMethod.GET])
     fun download(@RequestParam(name = "sourceFile") sourceFile: RelativePath,
                  request: HttpServletRequest,
                  response: HttpServletResponse) {
