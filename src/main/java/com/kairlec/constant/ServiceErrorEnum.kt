@@ -35,6 +35,7 @@ enum class ServiceErrorEnum(override val code: Int, override val msg: String, ov
     FILE_EMPTY(10007, "文件为空"),
     FILE_ALREADY_EXIST(10008, "文件已存在"),
     WRONG_FORMAT(10009, "错误的格式"),
+    WRONG_URL(10010, "错误的URL"),
 
     //登录异常
     USERNAME_NOT_EXISTS(30001, "用户名不存在"),
@@ -50,6 +51,7 @@ enum class ServiceErrorEnum(override val code: Int, override val msg: String, ov
     NULL_CAPTCHA(30011, "验证码为空"),
     UNKNOWN_PASSWORD(30012, "未知的密码串"),
     USERNAME_ALREADY_EXISTS(30013, "用户名已存在"),
+    NO_VERIFICATION_REQUIRED(30014, "无需验证"),
 
     //服务器异常
     IO_EXCEPTION(50001, "IO出现错误"),

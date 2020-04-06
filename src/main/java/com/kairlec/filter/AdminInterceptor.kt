@@ -1,6 +1,6 @@
 package com.kairlec.filter
 
-import com.kairlec.contrller.AdminController
+import com.kairlec.controller.AdminController
 import com.kairlec.local.utils.UserUtils
 import org.apache.logging.log4j.LogManager
 import org.springframework.stereotype.Component

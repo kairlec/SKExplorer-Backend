@@ -1,17 +1,17 @@
-package com.kairlec.contrller
+package com.kairlec.controller
 
 import com.kairlec.annotation.JsonRequestMapping
-import com.kairlec.constant.ServiceErrorEnum
 import com.kairlec.intf.ResponseDataInterface
 import com.kairlec.local.utils.FileUtils
 import com.kairlec.local.utils.MultipartFileSender
 import com.kairlec.local.utils.ResponseDataUtils.responseOK
+import com.kairlec.model.vo.RelativePath
 import com.kairlec.utils.content
-import com.kairlec.utils.get
-import com.kairlec.utils.getSourcePath
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestMethod
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.io.File
 import java.util.*
@@ -25,7 +25,7 @@ import javax.servlet.http.HttpServletResponse
  *@create: 2020-03-08 18:12
  */
 
-@JsonRequestMapping(value = ["/ferror"])
+@JsonRequestMapping(value = ["/ferror"],method = [RequestMethod.POST])
 @RestController
 class ErrorLogController {
     @RequestMapping(value = ["/content"])
@@ -45,12 +45,11 @@ class ErrorLogController {
     }
 
     @RequestMapping(value = ["/download"])
-    fun file(request: HttpServletRequest, response: HttpServletResponse) = MultipartFileSender.fromPath(FileUtils.getLogPath("Log/FrontEnd", request.getSourcePath().path), request, response).serveResource()
+    fun file(@RequestParam(name = "sourceFile") sourceFile: RelativePath, request: HttpServletRequest, response: HttpServletResponse) = MultipartFileSender.fromPath(FileUtils.getLogPath("Log/FrontEnd", sourceFile.path), request, response).serveResource()
 
     @RequestMapping(value = ["/submit"])
-    fun post(request: HttpServletRequest): ResponseDataInterface {
-        val json = request["object"] ?: ServiceErrorEnum.UNKNOWN_REQUEST.throwout()
-        logger.log(Level.getLevel("FRONTEND"), json)
+    fun post(@RequestParam(name = "content") content: String): ResponseDataInterface {
+        logger.log(Level.getLevel("FRONTEND"), content)
         return null.responseOK
     }
 

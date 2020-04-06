@@ -1,4 +1,4 @@
-package com.kairlec.contrller
+package com.kairlec.controller
 
 import com.kairlec.intf.ResponseDataInterface
 import com.kairlec.local.utils.ResponseDataUtils.responseError
@@ -18,7 +18,6 @@ class SKExceptionHandler {
     @ExceptionHandler
     @ResponseBody
     fun exception(e: Exception): ResponseDataInterface {
-        logger.error(e.message,e)
         return e.responseError
     }
 

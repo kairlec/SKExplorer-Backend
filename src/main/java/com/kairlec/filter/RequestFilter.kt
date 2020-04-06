@@ -44,7 +44,7 @@ open class RequestFilter {
             response.setHeader("Access-Control-Allow-Origin", originHeader)
             response.setHeader("Access-Control-Max-Age", "86400")
             response.setHeader("Access-Control-Allow-Credentials", "true")
-            response.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
+            response.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS")
             response.setHeader("Access-Control-Allow-Headers", "Access-Control,x-ijt")
             response.setHeader("Cache-Control", "no-cache")
             filterChain.doFilter(servletRequest, servletResponse)

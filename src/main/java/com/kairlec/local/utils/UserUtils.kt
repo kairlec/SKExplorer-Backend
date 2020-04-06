@@ -49,26 +49,14 @@ object UserUtils {
         return authHttpSession(session)
     }
 
-    fun authLogin(request: HttpServletRequest): User {
-        val session = request.session
-        if (session.getAttribute("user") != null) {
-            ServiceErrorEnum.HAD_LOGGED_IN.throwout() //已经登录过
-        }
-        val username = request.getParameter("username")
-        var password = request.getParameter("password")
-        val ip = request.IP
-        if (username == null) {
-            ServiceErrorEnum.NULL_USERNAME.throwout() //空的用户名
-        }
-        if (password == null) {
-            ServiceErrorEnum.NULL_PASSWORD.throwout() //空的密码
-        }
+    fun authLogin(ip: String, session: HttpSession, captchaRequestString: String?, captcha: Captcha?, username: String, passwordWithEncoding: String): User {
         val user = LocalConfig.configServiceImpl.getUser(username)
                 ?: ServiceErrorEnum.USERNAME_NOT_EXISTS.throwout() //错误的用户名
-        val captcha = session.getAttribute("captcha")
-        if (captcha is Captcha) {
-            val captchaString = request.getParameter("captcha")
-            if (captchaString == null || !captcha.check(captchaString)) {
+        if (captcha != null) {
+            if (captchaRequestString == null) {
+                ServiceErrorEnum.NEED_VERIFY.throwout()
+            }
+            if (!captcha.check(captchaRequestString)) {
                 ServiceErrorEnum.WRONG_CAPTCHA.throwout() //错误的验证码
             }
             session.removeAttribute("captcha")
@@ -78,8 +66,7 @@ object UserUtils {
                 ServiceErrorEnum.NEED_VERIFY.throwout() //不受信任的IP,需要验证
             }
         }
-        password = password.replace(' ', '+')
-        password = fromRequest(password)
+        val password = fromRequest(passwordWithEncoding.replace(' ', '+'))
         if (!user.equalsPassword(password)) {
             session.setAttribute("captcha", Captcha.getInstant(startupConfig.captchaCount))
             ServiceErrorEnum.WRONG_PASSWORD.throwout() //错误的密码

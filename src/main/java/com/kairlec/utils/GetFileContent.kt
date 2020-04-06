@@ -1,6 +1,6 @@
 package com.kairlec.utils
 
-import java.io.File;
+import java.io.File
 
 val File?.content: String
     get() {

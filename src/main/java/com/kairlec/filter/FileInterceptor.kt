@@ -28,7 +28,7 @@ class FileInterceptor : HandlerInterceptor {
     }
 
     companion object {
-        private val blackAPIList: Array<String> = arrayOf("/file/download","/file/get","/file/list")
+        private val blackAPIList: Array<String> = arrayOf("/file/download","/file/content","/file/list")
         var PathPatterns: List<String> = ArrayList(listOf(
                 "/file",
                 "/file/**"

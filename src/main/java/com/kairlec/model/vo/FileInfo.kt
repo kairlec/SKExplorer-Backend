@@ -1,8 +1,5 @@
 package com.kairlec.model.vo;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize
-import com.kairlec.local.jackson.RelativePathSerializer
-
 data class FileInfo(
         val name: String,
         val type: String? = null,

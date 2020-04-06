@@ -13,4 +13,5 @@ class FileList(val root: Boolean, items: ArrayList<FileInfo>, @JsonProperty("loc
     init {
         items.sort()
     }
+
 }

@@ -1,4 +1,4 @@
-package com.kairlec.contrller
+package com.kairlec.controller
 
 import com.kairlec.constant.ServiceErrorEnum
 import com.kairlec.intf.ResponseDataInterface

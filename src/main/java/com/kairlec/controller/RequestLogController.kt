@@ -1,13 +1,15 @@
-package com.kairlec.contrller
+package com.kairlec.controller
 
 import com.kairlec.annotation.JsonRequestMapping
 import com.kairlec.intf.ResponseDataInterface
 import com.kairlec.local.utils.FileUtils
 import com.kairlec.local.utils.MultipartFileSender
 import com.kairlec.local.utils.ResponseDataUtils.responseOK
+import com.kairlec.model.vo.RelativePath
 import com.kairlec.utils.content
-import com.kairlec.utils.getSourcePath
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestMethod
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.io.File
 import java.util.*
@@ -20,7 +22,7 @@ import javax.servlet.http.HttpServletResponse
  *@author: Kairlec
  *@create: 2020-03-08 18:13
  */
-@JsonRequestMapping(value = ["/request"])
+@JsonRequestMapping(value = ["/request"],method = [RequestMethod.POST])
 @RestController
 class RequestLogController {
     @RequestMapping(value = ["/content"])
@@ -39,5 +41,5 @@ class RequestLogController {
     }
 
     @RequestMapping(value = ["/download"])
-    fun file(request: HttpServletRequest, response: HttpServletResponse) = MultipartFileSender.fromPath(FileUtils.getLogPath("Log/Request", request.getSourcePath().path), request, response).serveResource()
+    fun file(@RequestParam(name = "sourceFile") sourceFile: RelativePath, request: HttpServletRequest, response: HttpServletResponse) = MultipartFileSender.fromPath(FileUtils.getLogPath("Log/Request", sourceFile.path), request, response).serveResource()
 }

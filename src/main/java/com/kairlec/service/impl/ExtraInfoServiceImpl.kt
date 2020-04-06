@@ -20,4 +20,16 @@ class ExtraInfoServiceImpl : ExtraInfoService {
         return ExtraInfoDAO.getExtraInfo(path) ?: ExtraInfo.Default
     }
 
+    override fun moveExtraInfo(path: RelativePath, target: RelativePath, isReplace: Boolean) {
+        return ExtraInfoDAO.moveExtraInfo(path, target, isReplace)
+    }
+
+    override fun renameExtraInfo(path: RelativePath, name: String) {
+        return ExtraInfoDAO.renameExtraInfo(path, name)
+    }
+
+
+    override fun deleteExtraInfo(path: RelativePath) {
+        ExtraInfoDAO.deleteExtraInfo(path)
+    }
 }

@@ -58,10 +58,10 @@ object ClassUtils {
             urls.nextElement()?.let { url ->
                 when (url.protocol) {
                     "file" -> {
-                        result.addAll(getAllClassNameByFile(File(url.path), recursive))
+                        result.addAll(getAllClassNameByFile(File(url.path), recursive, innerContains))
                     }
                     "jar" -> {
-                        result.addAll(getAllClassNameByJar((url.openConnection() as JarURLConnection).jarFile, packageName, recursive))
+                        result.addAll(getAllClassNameByJar((url.openConnection() as JarURLConnection).jarFile, packageName, recursive, innerContains))
                     }
                     else -> {
                         return@let

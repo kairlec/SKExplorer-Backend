@@ -5,7 +5,6 @@ import com.kairlec.model.bo.StartupConfig
 import com.kairlec.utils.ClassUtils
 import org.apache.logging.log4j.LogManager
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
 import kotlin.reflect.full.createInstance

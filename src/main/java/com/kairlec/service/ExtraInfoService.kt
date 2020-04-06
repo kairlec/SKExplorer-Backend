@@ -1,6 +1,5 @@
 package com.kairlec.service
 
-import com.kairlec.model.bo.AbsolutePath
 import com.kairlec.model.vo.ExtraInfo
 import com.kairlec.model.vo.RelativePath
 import org.springframework.stereotype.Service
@@ -12,4 +11,10 @@ interface ExtraInfoService {
     fun setExtraInfo(path: RelativePath, extraInfo: ExtraInfo)
 
     fun getExtraInfoDefault(path: RelativePath): ExtraInfo
+
+    fun moveExtraInfo(path: RelativePath, target: RelativePath, isReplace: Boolean)
+
+    fun renameExtraInfo(path: RelativePath, name: String)
+
+    fun deleteExtraInfo(path: RelativePath)
 }
