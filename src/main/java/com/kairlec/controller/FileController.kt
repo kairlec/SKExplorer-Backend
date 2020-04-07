@@ -83,7 +83,7 @@ class FileController {
         return fileServiceImpl.create(sourceDir, targetName, type, content)
     }
 
-    @RequestMapping(value = ["/content"], produces = ["text/plain"])
+    @RequestMapping(value = ["/content"], produces = ["text/plain;charset=UTF-8"])
     fun content(@RequestParam(name = "sourceFile") sourceFile: RelativePath): String {
         return fileServiceImpl.content(sourceFile)
     }

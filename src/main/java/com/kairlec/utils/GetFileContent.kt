@@ -7,5 +7,5 @@ val File?.content: String
         if (this == null || !this.exists()) {
             return ""
         }
-        return this.readText()
+        return this.readText(Charsets.UTF_8)
     }
